@@ -1,0 +1,225 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/maritime-ot-security/pgn-library/schemas/pgn.schema.json",
+  "title": "NMEA 2000 PGN Library Schema",
+  "description": "Schema for NMEA 2000 Parameter Group Number definitions",
+  "type": "object",
+  "required": ["Version", "PGNs"],
+  "properties": {
+    "Comment": {
+      "type": "string",
+      "description": "Optional comment about the library"
+    },
+    "Version": {
+      "type": "string",
+      "description": "Library version",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "CreatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when library was generated"
+    },
+    "PGNs": {
+      "type": "array",
+      "description": "Array of PGN definitions",
+      "items": {
+        "$ref": "#/definitions/PGN"
+      }
+    }
+  },
+  "definitions": {
+    "PGN": {
+      "type": "object",
+      "required": ["PGN", "Description"],
+      "properties": {
+        "PGN": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 262143,
+          "description": "Parameter Group Number (0-262143)"
+        },
+        "Id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9]*$",
+          "description": "Camel-case identifier"
+        },
+        "Description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable description"
+        },
+        "Explanation": {
+          "type": "string",
+          "description": "Detailed explanation of the PGN"
+        },
+        "Priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 7,
+          "description": "CAN priority (0=highest, 7=lowest)"
+        },
+        "Category": {
+          "type": "string",
+          "enum": [
+            "Protocol",
+            "Navigation",
+            "Engine",
+            "Propulsion",
+            "Electrical",
+            "Environmental",
+            "Entertainment",
+            "Communication",
+            "Steering",
+            "Custom",
+            "Unknown"
+          ],
+          "description": "Functional category"
+        },
+        "Type": {
+          "type": "string",
+          "enum": ["Single", "Fast", "ISO"],
+          "description": "Message type"
+        },
+        "Complete": {
+          "type": "boolean",
+          "description": "Whether all fields are known"
+        },
+        "Fallback": {
+          "type": "boolean",
+          "description": "Whether this is a fallback definition"
+        },
+        "Missing": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of missing field information"
+        },
+        "FieldCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of fields"
+        },
+        "Length": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1785,
+          "description": "Total message length in bytes"
+        },
+        "TransmissionInterval": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Transmission interval in milliseconds"
+        },
+        "TransmissionIrregular": {
+          "type": "boolean",
+          "description": "Whether transmission is event-driven"
+        },
+        "Fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Field"
+          },
+          "description": "Field definitions"
+        }
+      }
+    },
+    "Field": {
+      "type": "object",
+      "required": ["Order", "Name", "BitLength"],
+      "properties": {
+        "Order": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Field order (1-based)"
+        },
+        "Id": {
+          "type": "string",
+          "description": "Camel-case identifier"
+        },
+        "Name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable name"
+        },
+        "Description": {
+          "type": "string",
+          "description": "Field description"
+        },
+        "BitLength": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Field length in bits"
+        },
+        "BitOffset": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Offset from message start in bits"
+        },
+        "BitStart": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 7,
+          "description": "Start bit within first byte"
+        },
+        "Resolution": {
+          "type": "number",
+          "description": "Value multiplier/resolution"
+        },
+        "Offset": {
+          "type": "number",
+          "description": "Value offset for conversion"
+        },
+        "Signed": {
+          "type": "boolean",
+          "description": "Whether value is signed"
+        },
+        "RangeMin": {
+          "type": "number",
+          "description": "Minimum valid value"
+        },
+        "RangeMax": {
+          "type": "number",
+          "description": "Maximum valid value"
+        },
+        "Unit": {
+          "type": "string",
+          "description": "Physical unit (rad, m/s, K, etc.)"
+        },
+        "FieldType": {
+          "type": "string",
+          "enum": [
+            "NUMBER",
+            "LOOKUP",
+            "BITFIELD",
+            "BINARY",
+            "STRING_FIX",
+            "STRING_LZ",
+            "STRING_LAU",
+            "DATE",
+            "TIME",
+            "MMSI",
+            "PGN",
+            "MANUFACTURER",
+            "RESERVED",
+            "SPARE"
+          ],
+          "description": "Field data type"
+        },
+        "LookupEnumeration": {
+          "type": "string",
+          "description": "Name of enumeration for LOOKUP fields"
+        },
+        "LookupBitEnumeration": {
+          "type": "string",
+          "description": "Name of bit enumeration for BITFIELD"
+        },
+        "Match": {
+          "type": "integer",
+          "description": "Fixed value for field matching"
+        }
+      }
+    }
+  }
+}
