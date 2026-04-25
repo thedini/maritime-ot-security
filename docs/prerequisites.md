@@ -184,8 +184,8 @@ Understanding of how computers work:
 - Hardware interfaces
 
 **Where this is used in the course**:
-- Week 4: Building Teensy-based CAN interface (embedded system)
-- Week 4: Understanding SPI communication to MCP2515 CAN controller
+- Week 4: Building the NEMO board (Teensy 4.0 + dual TJA1050 transceivers, custom PCB)
+- Week 4: Understanding the Teensy's native FlexCAN controllers and why NEMO uses two of them simultaneously
 - Throughout: Appreciating real-time constraints of OT systems
 
 **If you lack this**: Optional, but reading about Arduino/Raspberry Pi projects provides useful context. *Make: Electronics* by Charles Platt is an excellent intro.
