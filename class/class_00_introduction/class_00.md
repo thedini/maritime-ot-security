@@ -222,29 +222,32 @@ Why detection?
 
 ## OpenBridge: Our Platform
 
-Low-cost NMEA 2000 simulation and testing platform:
+OpenBridge is the open-source curriculum and research framework. Its hardware is **NEMO** (NMEA 2000 Education and Maritime Operations) — a custom dual-bus board built around the Teensy 4.0:
 
-- **Hardware**: Teensy 4.x + MCP2515 (~$43)
-- **Software**: Open-source Arduino libraries
-- **Capability**: Send/receive 49 PGN types
+- **Hardware**: Teensy 4.0 with two native FlexCAN controllers, dual TJA1050 transceivers, OLED, pots, buttons (~$50)
+- **Architecture**: One CAN bus for transmit/inject, a second in listen-only mode for passive monitoring — at the same time
+- **Software**: PlatformIO + the NMEA2000 Arduino library (Lappalainen)
+- **Capability**: Sensor simulation (13 types), attack injection (DoS + impersonation across 28 PGNs), passive sniffing
 - **Purpose**: Education, research, testing
 
-![OpenBridge Hardware](../../images/openbridge_hardware.jpg)
+![NEMO Hardware](../../images/openbridge_hardware.jpg)
 
 **We will build this in Week 4!**
 
 <!--
 Instructor Notes:
 
-Show the hardware components:
-- Teensy microcontroller
-- MCP2515 CAN controller
-- TJA1050 transceiver
+Show the NEMO hardware:
+- Teensy 4.0 microcontroller (top)
+- Two TJA1050 CAN transceivers
+- SH1106 OLED display
+- Three pots, four D-pad buttons
+- NMEA 2000 M12 connector + 3-pin screw terminal
 
 Emphasize:
-- Much cheaper than commercial NMEA 2000 tools ($1000+)
-- Same capability for our educational purposes
-- Open source = we can modify and extend
+- ~200x cheaper than commercial maritime cyber training platforms ($10k+)
+- Dual-bus architecture is unique at this price point — inject and observe simultaneously
+- Open source = students can modify the firmware, reorder PCBs, extend the platform
 
 Have a completed unit to pass around if available.
 -->
@@ -253,7 +256,7 @@ Have a completed unit to pass around if available.
 
 | Tool | Purpose |
 |------|---------|
-| OpenBridge | NMEA 2000 simulation |
+| NEMO (OpenBridge hardware) | NMEA 2000 simulation, injection, monitoring |
 | OpenPlotter | Real vessel data capture |
 | can-utils | CAN bus analysis (candump, cansend) |
 | Wireshark | Protocol analysis |
