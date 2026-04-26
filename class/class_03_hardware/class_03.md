@@ -243,12 +243,14 @@ Two procurement paths. Either is fine for the course; instructors should choose 
 ### Path A: DIY from JLCPCB
 
 1. Clone or download [Soups71/NEMO](https://github.com/Soups71/NEMO).
-2. Open `PCB/NEMO.kicad_pro` in KiCad 9.0+ and export gerbers.
-3. Upload to JLCPCB (or equivalent) and order — typical cost is $2–5 per board for small qty, plus shipping and ~2-week fab lead time.
-4. Order remaining components (BOM above) in parallel.
-5. In Lab 04, students inspect, solder, and program the board.
+2. Open `PCB/NEMO.kicad_pro` in KiCad 9.0+ and export gerbers and the BOM/CPL files.
+3. Upload to JLCPCB and order with **SMT assembly turned on** for the TJA1050 transceivers and any 0805 decoupling caps. Typical cost is $2–5 per bare PCB plus $3–$8 per board for SMT assembly, with ~2–3 week fab + assembly lead time.
+4. Order remaining (through-hole) components — Teensy 4.0, OLED, pots, buttons, screw terminal, M12, USB cables — in parallel.
+5. In Lab 04, students inspect the SMT-assembled board, hand-solder the THT components, and program the board.
 
-This is the recommended path: students see the full pipeline from KiCad files to a working board.
+**SMT assembly is required, not optional.** Hand-soldering SOIC-8 surface-mount parts is not a reasonable expectation for non-EE graduate students; failures at this step typically derail the rest of the semester. JLCPCB SMT assembly is the cheapest reliable way to get the TJA1050s and decoupling caps onto the board.
+
+This is the recommended path: students still see the full pipeline from KiCad files to a working board, and they get genuine soldering experience on the THT parts.
 
 ### Path B: Pre-built board
 

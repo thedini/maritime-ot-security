@@ -58,7 +58,7 @@ Soldering creates burn and fume hazards. Use a fume extractor or work in a venti
 
 Your instructor has chosen one of two paths for this course:
 
-- **Path A (DIY)** — your group received an unpopulated NEMO PCB plus a parts kit. You will solder the through-hole components and (possibly) the surface-mount parts.
+- **Path A (DIY)** — your group received a NEMO PCB with SMT-assembled TJA1050 transceivers and decoupling caps (done by JLCPCB before the boards shipped) plus a kit of through-hole components. You will solder only the THT parts in this lab.
 - **Path B (Pre-built)** — your group received a fully assembled NEMO board. Skip Part 2 (soldering) unless your instructor flagged specific parts that still need attaching (commonly the M12 connector or screw terminal).
 
 The remaining parts of this lab are identical for both paths.
@@ -113,17 +113,20 @@ Note any unexpected continuity in your lab notebook and stop until the instructo
 
 **Path B users skip to Part 3.**
 
-### 2.1 Solder Order
+> **Path A boards arrive with all surface-mount parts (TJA1050 transceivers, decoupling capacitors) already populated by JLCPCB's SMT assembly service.** Students solder only the through-hole (THT) components in this lab. SMD soldering is *not* a student task — that's a deliberate choice, not an omission.
+
+### 2.1 Solder Order (THT only)
 
 Work from shortest components to tallest:
 
-1. Any 0805/SOIC SMD parts (TJA1050, decoupling caps) — likely pre-populated by JLCPCB if you ordered assembly. If not, this step is the hardest; ask the instructor for help.
-2. Tactile buttons (THT, four)
-3. 3-pin screw terminal
-4. Pot footprints (three)
-5. OLED header (4-pin female header on PCB; OLED itself plugs in)
-6. Teensy headers (two strips along the edges)
-7. M12 NMEA 2000 connector (often a flying lead — secure mechanically before final solder)
+1. Tactile buttons (THT, four)
+2. 3-pin screw terminal
+3. Pot footprints (three)
+4. OLED header (4-pin female header on PCB; OLED itself plugs in)
+5. Teensy headers (two strips along the edges)
+6. M12 NMEA 2000 connector (often a flying lead — secure mechanically before final solder)
+
+The TJA1050 transceivers and any 0805 decoupling caps are SMD-assembled on the board you received and require **no student soldering**.
 
 ### 2.2 Soldering Tips
 
@@ -158,11 +161,16 @@ Walk around constantly. Catch bad joints before students plug
 in USB. A short between 5V and GND on the Teensy will damage
 the regulator.
 
-For programs without soldering capacity: order from JLCPCB with
-their assembly service for the SMD parts, or request a
-pre-built board from nemo@jamescampbell.org. The 4 push
-buttons, screw terminal, OLED header, and Teensy headers can
-all be done by the instructor pre-class if needed.
+Path A SMD assembly is REQUIRED — order JLCPCB with SMT assembly
+turned on for the TJA1050s and decoupling caps. Hand-soldering
+SOIC-8 parts is not a reasonable expectation for a graduate
+cybersecurity course (most students aren't EE majors), and
+it's a high-failure-rate step that can derail the rest of
+the semester.
+
+For programs without ANY soldering capacity (i.e., even THT is
+out of scope), use Path B: pre-built boards via
+nemo@jamescampbell.org.
 -->
 
 ## Part 3: Software Setup (20 minutes)
@@ -306,7 +314,7 @@ Navigate **Configure → Sensor 1**. The sensor configuration screen lets you:
 - Toggle "Active"
 - Watch the value change as you turn pot R1
 
-Each of the three pots maps to one of three independent virtual sensors. The four buttons drive the menu. If any input doesn't work, note which one and revisit Part 2.5 (solder verification) for that pin.
+Each of the three pots maps to one of three independent virtual sensors. The four buttons drive the menu. If any input doesn't work, note which one and revisit Part 2.3 (solder verification) for that pin.
 
 ## Part 6: Network Connection Test (20 minutes)
 

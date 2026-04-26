@@ -286,7 +286,7 @@ sudo dd if=openplotter-xxx.img of=/dev/sdX bs=4M status=progress
 # Enable CAN kernel modules
 sudo modprobe can
 sudo modprobe can_raw
-sudo modprobe mcp251x
+sudo modprobe mcp251x  # Raspberry Pi CAN Hat driver — the Hat uses an MCP2515 CAN controller, distinct from NEMO (which uses the Teensy's native FlexCAN)
 
 # Bring up CAN0 at 250kbps (NMEA 2000 standard)
 sudo ip link set can0 type can bitrate 250000

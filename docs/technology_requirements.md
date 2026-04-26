@@ -92,7 +92,7 @@ Each student (or pair of students) needs the following components to build a NEM
 **8 weeks before semester start**:
 - Decide procurement path (A vs B). Path B (pre-built) skips the PCB fab steps below — coordinate with `nemo@jamescampbell.org` for ship date
 - Place PCB order at JLCPCB (or equivalent): export gerbers from `Soups71/NEMO/PCB/NEMO.kicad_pro`, upload, order quantity = (class size × 1.2) for 20% spares. Typical fab + ship time is 2–3 weeks
-- Optionally enable JLCPCB's SMD assembly service for the surface-mount parts (TJA1050s, decoupling caps); this raises per-board cost slightly but eliminates the hardest soldering step
+- **Enable JLCPCB's SMT assembly service for the TJA1050 CAN transceivers and any 0805 decoupling capacitors. This is required for Path A — students do not hand-solder SOIC-8 surface-mount parts.** The added per-board cost (typically $3–$8) is a fraction of the time and failure-rate cost of attempting SOIC soldering with non-EE students. SMT assembly is also why Path A's lab time budget is realistic.
 
 **6 weeks before semester start**:
 - Place bulk order for Teensy 4.0 boards (PJRC.com — educational discount on 20+)
@@ -187,7 +187,7 @@ Equipment that students share (not per-person):
 | **Oscilloscope** | Viewing CAN differential signals, I2C debug | 1-2 | $400 | Entry-level DSO (Rigol DS1054Z) |
 | **Logic Analyzer** | Capture I2C / GPIO for OLED and button debug | 2-4 | $50-200 | USB logic analyzer or Saleae clone |
 | **Multimeter** | Voltage, continuity testing on populated PCBs | 4-6 | $20 | Basic digital multimeter sufficient |
-| **Soldering Station** | Populating NEMO PCB (THT + optional SMD rework) | 2-4 | $40 | Temperature-controlled — required for Path A |
+| **Soldering Station** | Populating THT components on NEMO PCB (Teensy headers, screw terminal, OLED header, M12, buttons, pots) | 2-4 | $40 | Temperature-controlled — required for Path A. SMD parts are JLCPCB-assembled, not student-soldered. |
 | **Fume Extractor** | Soldering safety | 1-2 | $30 | Fan with filter |
 | **Wire Stripper** | Cable preparation | 2-4 | $10 | Automatic stripper recommended |
 | **Heat Shrink Kit** | Cable management | 1 | $15 | Assorted sizes |
@@ -651,9 +651,9 @@ while True:
 
 #### JLCPCB (NEMO PCB fabrication)
 - **Website**: https://jlcpcb.com
-- **Products**: Custom PCB fab from KiCad files; optional SMD assembly service
-- **Advantages**: Very low per-board cost ($2–$5 for small qty), reliable quality, optional SMT assembly removes the hardest soldering step
-- **Disadvantages**: 2–3 week lead time including shipping; minimum batch size (typically 5 boards)
+- **Products**: Custom PCB fab from KiCad files; SMT assembly service (required for Path A)
+- **Advantages**: Very low per-board cost ($2–$5 for small qty), reliable quality, SMT assembly removes the hardest soldering step (SOIC-8 transceivers) — critical for non-EE student cohorts
+- **Disadvantages**: 2–3 week lead time including shipping; minimum batch size (typically 5 boards); SMT assembly adds $3–$8/board but is mandatory for the curriculum
 - **Recommendation**: Order in bulk for the whole class; use KiCad files in [Soups71/NEMO/PCB](https://github.com/Soups71/NEMO/tree/main/PCB)
 
 #### NEMO Maintainers (Pre-built boards, Path B)
@@ -885,7 +885,7 @@ while True:
 | Item | Qty | Unit Price | Total |
 |------|-----|------------|-------|
 | NEMO PCB (5-up panel, 5 panels = 25 boards) | 25 | $1.00 | $25.00 |
-| SMD assembly service (TJA1050s + caps, optional) | 25 | $5.00 | $125.00 |
+| SMT assembly service (TJA1050s + caps, REQUIRED for Path A) | 25 | $5.00 | $125.00 |
 | Shipping | | | $25.00 |
 | **JLCPCB Total** | | | **$175.00** |
 

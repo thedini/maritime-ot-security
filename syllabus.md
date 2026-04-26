@@ -73,7 +73,7 @@ Upon completion, students will be able to:
 
 The course uses **NEMO**, an open-source dual-bus NMEA 2000 board built around the Teensy 4.0's two native FlexCAN controllers. Two procurement paths are supported:
 
-**Path A — DIY (recommended for the educational experience):** order the PCB from JLCPCB (or equivalent) using the KiCad files in the [NEMO repository](https://github.com/Soups71/NEMO/tree/main/PCB) and assemble per Lab 04.
+**Path A — DIY (recommended for the educational experience):** order the PCB from JLCPCB using the KiCad files in the [NEMO repository](https://github.com/Soups71/NEMO/tree/main/PCB) **with SMT assembly turned on** for the TJA1050 transceivers and 0805 decoupling caps; students hand-solder only the through-hole components (Teensy headers, screw terminal, OLED header, M12 connector, buttons, pots) per Lab 04. SMT assembly is required, not optional — non-EE graduate students hand-soldering SOIC-8 parts is a high-failure-rate task that derails the rest of the semester.
 
 **Path B — Pre-built board:** for time-constrained programs, email `nemo@jamescampbell.org` with subject "Board Request" to coordinate a shipped, pre-assembled NEMO.
 
@@ -95,7 +95,7 @@ Instructor Notes:
 - Consider a single bulk PCB run for the whole class to lower per-board cost
 - Have 2-3 spare kits for failures/loaners
 - For programs without soldering capacity, request pre-built boards via nemo@jamescampbell.org
-- Pre-solder Teensy headers and surface-mount parts before student lab if soldering time is limited
+- Pre-solder Teensy headers before student lab if soldering time is limited (SMD parts are JLCPCB-assembled, never student-soldered)
 -->
 
 ### Software (all open-source)
