@@ -1,6 +1,6 @@
 ---
 title: "Lab 04"
-subtitle: "OpenBridge Hardware Assembly"
+subtitle: "NEMO Hardware Assembly"
 author: "Constantine Macris"
 date: "2026"
 titlepage: true
@@ -12,352 +12,360 @@ book: true
 classoption: oneside
 code-block-font-size: \scriptsize
 description: |
-    Building and testing the OpenBridge NMEA 2000 interface
+    Receiving, assembling, and programming the NEMO dual-bus NMEA 2000 board
 ---
 
-# Lab 04 -- OpenBridge Hardware Assembly
+# Lab 04 -- NEMO Hardware Assembly
 
 ## Lab Overview
 
 **Duration**: 2 hours
-**Prerequisites**: Lab 01-03 completed, Class 03 material reviewed
+**Prerequisites**: Lab 01–03 completed, Class 03 material reviewed
 **Materials Required**:
-- Teensy 4.0 or 4.1
-- MCP2515 CAN module
-- Breadboard and jumper wires
-- USB Micro cable
-- Computer with Arduino IDE installed
+
+- NEMO PCB (DIY-fabbed via JLCPCB *or* pre-built from `nemo@jamescampbell.org`)
+- Component BOM (Class 03, full table) if Path A
+- Teensy 4.0
+- USB Micro-B cable
+- Computer with VS Code + PlatformIO + Teensyduino installed
+
+**For Path A (DIY) only:**
+
+- Soldering iron (~30W or temperature-controlled), solder, flux
+- Tip-cleaning sponge or brass wool
+- Helping-hands or PCB vise
+- Side cutters / flush cutters
+- Multimeter
 
 ## Objectives
 
 By the end of this lab, you will:
 
-1. Assemble OpenBridge hardware on breadboard
-2. Flash firmware to Teensy
-3. Verify CAN interface functionality
-4. Connect to test network
-5. Send and receive test messages
+1. Inspect a NEMO PCB and verify components against the BOM
+2. (Path A) Solder through-hole components to the PCB
+3. Flash the NEMO firmware to the Teensy 4.0
+4. Verify boot via OLED splash and `candump` serial output
+5. Connect to an isolated test network and observe traffic
+6. Document your build with photos and a written report
 
 ## Safety Notice
 
-**CRITICAL**: This hardware can transmit on CAN bus. All testing MUST be performed on isolated test networks only. Never connect to live vessel systems without explicit authorization.
+**CRITICAL**: This board can transmit on a CAN bus. All testing in this lab MUST be performed on isolated test networks only. **Never** connect to live vessel systems without explicit authorization.
 
-## Part 1: Hardware Assembly (45 minutes)
+Soldering creates burn and fume hazards. Use a fume extractor or work in a ventilated area; wear safety glasses; never leave a hot iron unattended.
 
-### 1.1 Gather Components
+## Procurement Path Reminder
 
-Verify you have all required components:
+Your instructor has chosen one of two paths for this course:
 
-```
-□ Teensy 4.0/4.1 microcontroller
-□ MCP2515 CAN module (with TJA1050)
-□ Breadboard (400+ points)
-□ Jumper wires (male-to-male, 7 required)
-□ USB cable (Micro-B for 4.0, or appropriate for 4.1)
-```
+- **Path A (DIY)** — your group received a NEMO PCB with SMT-assembled TJA1050 transceivers and decoupling caps (done by JLCPCB before the boards shipped) plus a kit of through-hole components. You will solder only the THT parts in this lab.
+- **Path B (Pre-built)** — your group received a fully assembled NEMO board. Skip Part 2 (soldering) unless your instructor flagged specific parts that still need attaching (commonly the M12 connector or screw terminal).
 
-### 1.2 Inspect the MCP2515 Module
+The remaining parts of this lab are identical for both paths.
 
-Before connecting, identify the crystal oscillator on your module:
+## Part 1: Inspect and Verify (30 minutes)
 
-```
-Look for small metal cylinder marked:
-- "16.000" = 16 MHz crystal
-- "8.000" = 8 MHz crystal
+### 1.1 Visual Inspection
 
-Record your crystal frequency: _____________ MHz
-```
+Place the NEMO board on a clean static-dissipative mat (a ream of printer paper works in a pinch).
 
-**This is critical for firmware configuration!**
-
-### 1.3 Wire Power Connections
-
-**Disconnect USB before wiring!**
-
-| Teensy Pin | MCP2515 Pin | Wire Color (suggested) |
-|------------|-------------|------------------------|
-| 3.3V | VCC | Red |
-| GND | GND | Black |
-
-**Double-check polarity before proceeding!**
-
-### 1.4 Wire SPI Interface
-
-| Teensy Pin | MCP2515 Pin | Function |
-|------------|-------------|----------|
-| Pin 10 | CS | Chip Select |
-| Pin 11 | SI (MOSI) | Data to CAN |
-| Pin 12 | SO (MISO) | Data from CAN |
-| Pin 13 | SCK | SPI Clock |
-
-### 1.5 Wire Interrupt
-
-| Teensy Pin | MCP2515 Pin | Function |
-|------------|-------------|----------|
-| Pin 2 | INT | CAN Interrupt |
-
-### 1.6 Verification Checklist
-
-Before applying power, verify each connection:
+Cross-check against the BOM:
 
 ```
-□ 3.3V → VCC (not 5V!)
-□ GND → GND
-□ Pin 10 → CS
-□ Pin 11 → SI/MOSI
-□ Pin 12 → SO/MISO
-□ Pin 13 → SCK
-□ Pin 2 → INT
-
-□ No loose connections
-□ No shorts between adjacent pins
-□ Wires routed cleanly
+□ Teensy 4.0 (NOT a Teensy 3.x — NEMO requires the i.MX RT1062)
+□ TJA1050 CAN transceiver — 2 pieces (U2 = CAN1, U3 = CAN2)
+□ SH1106 128×64 OLED, I2C
+□ 10kΩ panel-mount potentiometer — 3 pieces
+□ Tactile push button — 4 pieces
+□ NMEA 2000 M12 micro-C connector
+□ 3-pin screw terminal block
+□ Custom NEMO PCB
 ```
 
-### 1.7 Document Your Build
+Path B users: skim the surface of the board for cold joints, missing components, or solder bridges. Flag anything suspicious to the instructor before powering on.
 
-Take a clear photo of your assembled hardware for your lab report.
+### 1.2 PCB Inspection (silkscreen orientation)
+
+Identify and record the location of:
+
+- **U1** — Teensy 4.0 footprint (largest IC location)
+- **U2** — TJA1050 #1 (CAN1 / attack bus)
+- **U3** — TJA1050 #2 (CAN2 / monitor bus)
+- **D-pad** — four tactile button positions (silkscreen marks UP/DOWN/LEFT/RIGHT or similar)
+- **R1, R2, R3** — pot positions
+- **OLED** — header location, four pins (GND, VCC, SDA, SCL)
+- **3-pin screw terminal** — connects to CAN1
+- **M12 connector** — connects to CAN2
+
+If the silkscreen is unclear, refer to `PCB/NEMO.kicad_sch` in the [NEMO repo](https://github.com/Soups71/NEMO/tree/main/PCB).
+
+### 1.3 Continuity Pre-Check (multimeter)
+
+Before any soldering or power-up:
+
+- VCC (5V) to GND: should read **open** (no short)
+- 3.3V rail to GND: should read **open**
+- CAN_H to CAN_L on M12 with Teensy/transceiver socket empty: should read **open**
+
+Note any unexpected continuity in your lab notebook and stop until the instructor confirms.
+
+## Part 2: Soldering (Path A only — 45 minutes)
+
+**Path B users skip to Part 3.**
+
+> **Path A boards arrive with all surface-mount parts (TJA1050 transceivers, decoupling capacitors) already populated by JLCPCB's SMT assembly service.** Students solder only the through-hole (THT) components in this lab. SMD soldering is *not* a student task — that's a deliberate choice, not an omission.
+
+### 2.1 Solder Order (THT only)
+
+Work from shortest components to tallest:
+
+1. Tactile buttons (THT, four)
+2. 3-pin screw terminal
+3. Pot footprints (three)
+4. OLED header (4-pin female header on PCB; OLED itself plugs in)
+5. Teensy headers (two strips along the edges)
+6. M12 NMEA 2000 connector (often a flying lead — secure mechanically before final solder)
+
+The TJA1050 transceivers and any 0805 decoupling caps are SMD-assembled on the board you received and require **no student soldering**.
+
+### 2.2 Soldering Tips
+
+- 700°F / 370°C is fine for leaded solder; 750°F / 400°C for lead-free
+- Touch the iron to the **pad and lead simultaneously**, then feed solder to the joint (not the iron tip)
+- 1–2 seconds per joint; longer than 5 seconds risks lifting the pad
+- Good joint = shiny, concave fillet covering the pad and the lead
+- Cold joint = matte, ball-shaped, doesn't fully wet the pad → reflow with flux
+
+### 2.3 Solder Verification (multimeter)
+
+After soldering:
+
+- Continuity from each Teensy header pin **to its destination on the PCB** (refer to schematic for any pin you're unsure about)
+- No bridges between adjacent pins, especially on the Teensy headers and OLED header
+- Re-check the VCC ↔ GND check from 1.3 — still open
+
+### 2.4 Document Your Build
+
+Take a clear photo of your finished, populated PCB for your lab report (top view + bottom view).
 
 <!--
 Instructor Notes:
 
-Common assembly mistakes:
-1. Wrong voltage (5V instead of 3.3V)
-2. MOSI/MISO swapped
-3. Loose connections
-4. Wrong pins
+Common soldering mistakes in week 4:
+1. Inadequate pre-tinning of the iron
+2. Holding solder against the tip instead of the joint
+3. Pulling the iron away too early — joint not yet wetted
+4. Bridges on Teensy headers from too much solder
 
-Walk around and verify each student's build
-BEFORE they apply power.
+Walk around constantly. Catch bad joints before students plug
+in USB. A short between 5V and GND on the Teensy will damage
+the regulator.
 
-Have spare components available for failures.
+Path A SMD assembly is REQUIRED — order JLCPCB with SMT assembly
+turned on for the TJA1050s and decoupling caps. Hand-soldering
+SOIC-8 parts is not a reasonable expectation for a graduate
+cybersecurity course (most students aren't EE majors), and
+it's a high-failure-rate step that can derail the rest of
+the semester.
+
+For programs without ANY soldering capacity (i.e., even THT is
+out of scope), use Path B: pre-built boards via
+nemo@jamescampbell.org.
 -->
 
-## Part 2: Software Setup (20 minutes)
+## Part 3: Software Setup (20 minutes)
 
-### 2.1 Install Arduino IDE
+### 3.1 Verify VS Code + PlatformIO
 
-If not already installed:
+You should have already installed VS Code and the PlatformIO IDE extension as homework. If not:
 
-1. Download from https://www.arduino.cc/en/software
-2. Install for your platform
-3. Launch Arduino IDE
+1. Install [Visual Studio Code](https://code.visualstudio.com/)
+2. Open VS Code → Extensions (Ctrl+Shift+X / Cmd+Shift+X)
+3. Search "PlatformIO IDE" → Install
+4. Restart VS Code; wait for first-run dependency download
 
-### 2.2 Install Teensyduino
+### 3.2 Install Teensyduino
 
-1. Download from https://www.pjrc.com/teensy/td_download.html
-2. Run installer
-3. Point to your Arduino installation
-4. Select all libraries when prompted
+1. Download from [pjrc.com/teensy/teensyduino.html](https://www.pjrc.com/teensy/teensyduino.html)
+2. Run installer (skip the Arduino IDE step — PlatformIO doesn't need it)
 
-### 2.3 Install Required Libraries
+The Teensy Loader is what actually pushes firmware to the board.
 
-In Arduino IDE: **Sketch → Include Library → Manage Libraries**
-
-Search and install:
-- `NMEA2000` by Timo Lappalainen
-- `NMEA2000_mcp` by Timo Lappalainen
-- `mcp_can` by Cory J Fowler
-
-### 2.4 Clone OpenBridge Repository
+### 3.3 Clone the NEMO Repository
 
 ```bash
-# Clone the OpenBridge repository
-git clone https://github.com/[org]/openbridge.git
-
-# Navigate to firmware directory
-cd openbridge/src/VERSION\ 2/
+git clone https://github.com/Soups71/NEMO.git
+cd NEMO
 ```
 
-## Part 3: Firmware Configuration (15 minutes)
+### 3.4 Open the Firmware Project
 
-### 3.1 Configure Crystal Frequency
+In VS Code:
 
-Open `openbridge.h` and locate the clock setting:
+1. **File → Open Folder**
+2. Navigate to **`NEMO/SRC`** — open this folder, NOT the parent `NEMO` folder. PlatformIO needs `platformio.ini` at the project root.
+3. Wait for PlatformIO to initialize and download dependencies (first time is slow).
 
-```cpp
-// Set to match YOUR module's crystal
-#define MCP_CLOCK MCP_16MHZ  // or MCP_8MHZ
-```
-
-**Change this to match your module's crystal!**
-
-### 3.2 Verify Pin Configuration
-
-Confirm pin settings match your wiring:
-
-```cpp
-#define MCP_CS_PIN 10
-#define MCP_INT_PIN 2
-```
-
-### 3.3 Verify CAN Speed
-
-For NMEA 2000:
-
-```cpp
-#define CAN_SPEED CAN_250KBPS
-```
-
-### 3.4 Save Configuration
-
-Save your changes to `openbridge.h`.
+You should see the PlatformIO toolbar at the bottom of VS Code.
 
 ## Part 4: Flash Firmware (15 minutes)
 
 ### 4.1 Connect Teensy
 
-1. Connect USB cable to Teensy
-2. Connect other end to computer
-3. Teensy LED should light up
+1. Insert the Teensy 4.0 into its socket on the NEMO PCB (note pin-1 marker; reversed insertion will damage the board on power-up).
+2. Plug the USB Micro-B cable into the Teensy.
+3. Plug the other end into your computer.
+4. The Teensy's onboard LED should blink (default factory blink program).
 
-### 4.2 Select Board and Port
+### 4.2 Build
 
-In Arduino IDE:
+In VS Code, click the PlatformIO **Build** button (✓ icon, bottom toolbar). The first build pulls dependencies and takes a minute or two. Subsequent builds are fast.
 
-1. **Tools → Board → Teensy 4.0** (or 4.1)
-2. **Tools → Port → [select Teensy port]**
+If the build fails because `NMEA2000_Teensyx` or another library is missing, run:
 
-### 4.3 Upload Firmware
-
-1. Click **Upload** button (→)
-2. If prompted, press button on Teensy
-3. Wait for "Done uploading" message
-
-### 4.4 Open Serial Monitor
-
-1. **Tools → Serial Monitor**
-2. Set baud rate: **115200**
-3. You should see:
-
-```
-OpenBridge v2.0 initialized
-CAN interface ready
-Waiting for commands...
+```bash
+pio pkg install
 ```
 
-**If you see garbled text, check baud rate setting.**
+from the `SRC` directory. Note: it's **`NMEA2000_Teensyx`** — students with prior MCP2515 experience sometimes try `NMEA2000_mcp` out of habit. NEMO does not use the MCP2515.
 
-### 4.5 Troubleshooting
+### 4.3 Upload
 
-| Symptom | Possible Cause | Solution |
-|---------|---------------|----------|
-| No serial output | Wrong port | Check Tools → Port |
-| Garbled text | Wrong baud | Set to 115200 |
-| "CAN init failed" | Wrong crystal | Check MCP_CLOCK |
-| Teensy not recognized | Driver issue | Reinstall Teensyduino |
-
-<!--
-Instructor Notes:
-
-Most common issues:
-1. Crystal frequency mismatch (very common!)
-2. Wrong COM port selected
-3. SPI wiring errors
-
-If CAN init fails:
-- Check SPI wiring first
-- Then verify crystal setting
-- Power cycle and retry
--->
-
-## Part 5: Loopback Test (15 minutes)
-
-### 5.1 Create Loopback
-
-To test without a CAN network, create a loopback:
-
-1. Connect a jumper wire between CAN_H and CAN_L on your module
-2. This creates a "network of one"
-
-### 5.2 Send Test Message
-
-In Serial Monitor, enter:
-
-```
-40,1,15.0,45.0,1
-```
-
-(This sends Wind Data: SID=1, Speed=15 knots, Angle=45°, Reference=Apparent)
-
-### 5.3 Verify Response
+Click the PlatformIO **Upload** (→) button. The Teensy Loader window will pop up. If prompted, press the small white button on the Teensy itself.
 
 You should see:
 
 ```
-TX: PGN 130306 Wind Data
-RX: PGN 130306 Wind Data (loopback)
+Memory Usage -> [=         ]   ...
+PROGRAMMING: ...
+DONE
 ```
 
-**If you only see TX but no RX, check your loopback jumper.**
+### 4.4 Open Serial Monitor
 
-### 5.4 Test Multiple Commands
+Click the PlatformIO **Serial Monitor** icon. Set baud rate to **115200** if not auto-detected.
 
-Try these commands:
+You should see:
+
+- A boot banner from NEMO
+- (If anything is on CAN2) `candump`-format frames streaming, e.g.:
 
 ```
-# Position: 41.5°N, 71.4°W
-4,41.5,-71.4
-
-# Heading: 90 degrees magnetic
-2,1,1.5708,0.0,0.0,1
-
-# Engine RPM: 2500
-50,1,2500
+can2  09F80106   [8]  00 00 23 FF FF FF FF FF
+can2  09F11001   [8]  01 18 27 4A 00 FF 64 00
 ```
 
-Record which commands work in your lab notebook.
+The OLED should now display the NEMO splash, then the main menu.
 
-### 5.5 Remove Loopback
+### 4.5 Troubleshooting
 
-**Remove the CAN_H/CAN_L jumper before proceeding!**
+| Symptom | Possible Cause | Solution |
+|---------|----------------|----------|
+| No serial output | Wrong port selected | Click the gear icon in PlatformIO serial monitor; select the Teensy ACM/COM port |
+| OLED blank, board otherwise alive | Solder joint on pin 18/19 (I2C) or wrong driver | Check joints; confirm SH1106 (not SSD1306) |
+| `pio` not found | PlatformIO not installed properly | Reinstall the VS Code PlatformIO extension |
+| `NMEA2000_Teensyx` not found | Library install failed | Run `pio pkg install` from `SRC/` |
+| Teensy not recognized | Teensyduino not installed | Reinstall Teensyduino |
+| Random reboots | Power instability — try a different USB cable / port | Cheap USB cables can drop the 5V rail under load |
 
-## Part 6: Network Connection Test (15 minutes)
+<!--
+Instructor Notes:
+
+Most common Lab 04 issues:
+1. Student opens the parent `NEMO` folder, not `NEMO/SRC` -> PlatformIO doesn't recognize it
+2. Cold solder joint on the Teensy header -> intermittent USB / no boot
+3. Wrong USB cable (data vs charge-only) -> Teensy Loader doesn't see the board
+4. Skipped soldering on the OLED header -> board boots but display is blank
+
+Have at least one fully-built reference board on the bench so
+students can A/B test if they get stuck.
+-->
+
+## Part 5: Boot Verification (10 minutes)
+
+### 5.1 OLED Splash
+
+The OLED should briefly show the NEMO splash, then the main menu:
+
+```
+    MAIN MENU
+
+> Live Data
+  Configure
+  Attacks
+  About
+```
+
+Use the D-pad (left/up/down/right) to scroll. **Right** enters a submenu; **Left** backs out.
+
+### 5.2 candump Stream
+
+If the OLED works, your I2C and core firmware are healthy. The serial stream verifies CAN2:
+
+- If something is connected to the M12 CAN2 input and traffic is on the bus, you should see frames in the serial monitor.
+- If nothing is connected, the serial stream may show only the boot banner — that is expected.
+
+### 5.3 Pots and Buttons
+
+Navigate **Configure → Sensor 1**. The sensor configuration screen lets you:
+
+- Cycle manufacturer ID (use Up/Down)
+- Cycle device type / PGN (use Up/Down)
+- Toggle "Active"
+- Watch the value change as you turn pot R1
+
+Each of the three pots maps to one of three independent virtual sensors. The four buttons drive the menu. If any input doesn't work, note which one and revisit Part 2.3 (solder verification) for that pin.
+
+## Part 6: Network Connection Test (20 minutes)
 
 ### 6.1 Connect to Test Network
 
-**Only with instructor approval!**
+**Only with instructor approval.**
 
-1. Identify CAN_H and CAN_L on test network
-2. Connect your module:
-   - Module CAN_H → Network CAN_H (White wire)
-   - Module CAN_L → Network CAN_L (Blue wire)
-3. Optionally connect ground
+The test network is an isolated NMEA 2000 harness — never plug NEMO into a live vessel.
 
-### 6.2 Enable Monitoring Mode
+1. Plug the **M12 connector** into the test bus (this is CAN2 — listen-only, never transmits).
+2. Power the test network if it is not already powered (instructor will help).
+3. Confirm 120Ω termination at each end of the test harness (commercial NMEA 2000 networks have this built into the backbone).
 
-In Serial Monitor, enter:
+### 6.2 Observe Traffic on CAN2
 
-```
-monitor
-```
-
-You should see NMEA 2000 traffic scrolling:
+Navigate **Live Data** on the OLED. Within a few seconds you should see other devices on the test network appear with their source addresses in brackets:
 
 ```
-RX: PGN 127250 Heading: 125.3°
-RX: PGN 129025 Position: 41.4892, -71.4218
-RX: PGN 130306 Wind: 12.5 kts @ 35°
-...
+   LIVE DATA
+
+> GPS Unit       [50]
+  Depth Sounder  [51]
+  Test Sensor    [22]
 ```
 
-### 6.3 Record Network Traffic
+Press Right on a device to drill down into its PGNs. Press Right on a PGN to see parsed fields.
 
-Record for 60 seconds and note:
+In the PlatformIO serial monitor, you should now see `candump` frames stream in real time.
 
-- How many different PGNs do you see?
-- What devices appear to be on the network?
-- What is the approximate message rate?
+### 6.3 Inject Traffic on CAN1
 
-### 6.4 Send a Test Message
+1. Connect the **3-pin screw terminal** to the same test harness (this is CAN1 — transmit/inject side).
+2. Navigate **Configure → Sensor 1** and configure a fake Wind sensor (PGN 130306).
+3. Toggle Active = Yes.
+4. Watch your fake sensor appear in the **Live Data** menu (NEMO is observing its own traffic on CAN2 while transmitting on CAN1 — this is the dual-bus architecture in action).
+5. Turn pot R1 and watch the wind value change in real time on a classmate's NEMO or on OpenPlotter.
 
-Send a wind data message:
+### 6.4 Capture for Offline Analysis
 
+In a separate terminal (not the PlatformIO serial monitor — only one process can hold the port at a time):
+
+```bash
+# On Linux:
+cat /dev/ttyACM0 > capture.candump
+
+# On macOS:
+screen /dev/cu.usbmodem* 115200
+# Use Ctrl-A then H to start logging
 ```
-40,1,10.5,90.0,1
-```
 
-**Verify your message appears on another monitor (OpenPlotter or classmate's system).**
+This is the data-collection method used in Lab 09 and beyond.
 
 ## Part 7: Documentation (15 minutes)
 
@@ -366,22 +374,19 @@ Send a wind data message:
 Your lab report should include:
 
 1. **Build Documentation**
-   - Photo of assembled hardware
-   - Crystal frequency noted
-   - Any modifications made
-
+   - Procurement path (A or B)
+   - Photo(s) of the finished board (top + bottom view if Path A)
+   - Any deviations from the BOM
 2. **Firmware Configuration**
-   - Screenshot of successful upload
-   - Any configuration changes
-
+   - Screenshot of successful PlatformIO upload
+   - Screenshot of the OLED main menu
 3. **Test Results**
-   - Loopback test output
-   - Network traffic sample (10+ lines)
-   - Messages you successfully sent
-
+   - Boot banner / candump sample (10+ lines)
+   - Live Data screenshot showing at least one observed device
+   - Successful sensor injection (your fake sensor appearing in Live Data)
 4. **Issues Encountered**
    - Problems and solutions
-   - Troubleshooting steps taken
+   - Soldering rework, if any (Path A)
 
 ### 7.2 Lab Notebook Entry
 
@@ -389,22 +394,27 @@ Record in your lab notebook:
 
 ```
 Date: _______________
-Lab: 04 - Hardware Build
+Lab: 04 - NEMO Hardware Assembly
 
-Components Used:
-- Teensy model: _______
-- MCP2515 crystal: _______ MHz
+Procurement path:    Path A (DIY)  /  Path B (Pre-built)
+Teensy serial:       _______________
+NEMO PCB rev:        _______________
 
-Configuration:
-- MCP_CLOCK: _______
-- CAN_SPEED: _______
+Soldering (Path A only):
+  Components soldered: _______________
+  Rework required:     _______________
 
 Test Results:
-- Loopback: PASS / FAIL
-- Network TX: PASS / FAIL
-- Network RX: PASS / FAIL
+  Visual inspection:    PASS / FAIL
+  Continuity pre-check: PASS / FAIL
+  Firmware upload:      PASS / FAIL
+  OLED splash + menu:   PASS / FAIL
+  Pot R1 / R2 / R3:     ___ / ___ / ___
+  Buttons U/D/L/R:      ___ / ___ / ___ / ___
+  Live Data observed:   PASS / FAIL
+  Injection on CAN1:    PASS / FAIL
 
-Issues/Notes:
+Issues / Notes:
 _________________________________
 _________________________________
 ```
@@ -413,55 +423,65 @@ _________________________________
 
 Submit via course portal:
 
-1. **Lab report** (PDF) - 2-3 pages
-2. **Hardware photo** - Clear image showing wiring
-3. **Serial output log** - Copy of successful communication
+1. **Lab report** (PDF) — 2–3 pages
+2. **Hardware photo(s)** — clear images showing the populated PCB
+3. **Serial output log** — at least 50 lines from the candump stream
 
 ## Evaluation Criteria
 
 | Criterion | Points |
 |-----------|--------|
-| Hardware correctly assembled | 25 |
-| Firmware configured and uploaded | 20 |
-| Loopback test successful | 20 |
-| Network test successful | 20 |
+| Hardware inspected and (Path A) correctly soldered | 25 |
+| Firmware built and uploaded | 20 |
+| OLED + pots + buttons verified | 20 |
+| Network connection test (Live Data + injection) | 20 |
 | Documentation complete | 15 |
 | **Total** | **100** |
 
 ## Troubleshooting Reference
 
-### CAN Init Failed
+### Build/Upload fails
 
-1. Check SPI wiring (pins 10, 11, 12, 13)
-2. Verify crystal frequency setting
-3. Check power connections
-4. Try different MCP2515 module
+1. Confirm you opened `NEMO/SRC` (not `NEMO`)
+2. Run `pio pkg install` from `SRC/`
+3. Check that Teensyduino is installed
+4. Try a different USB cable (data, not charge-only)
 
-### No TX/RX on Network
+### OLED blank but board otherwise responsive
 
-1. Check CAN_H/CAN_L connections
-2. Verify network has termination (120Ω)
-3. Confirm CAN speed matches (250kbps)
-4. Check if network is powered
+1. Inspect solder joints on pins 18/19
+2. Verify the OLED driver chip is SH1106 (some Amazon listings ship SSD1306 in identical packaging — incompatible without firmware change)
+3. Reseat the OLED on its header
 
-### Garbled Serial Output
+### CAN2 shows no traffic
 
-1. Set baud rate to 115200
-2. Check USB cable connection
-3. Try different USB port
+1. Confirm test network is powered and has another node transmitting
+2. Check M12 wiring (CAN_H, CAN_L, GND assignments)
+3. Verify the 120Ω termination resistors on the test harness
+4. Inspect U3 (the CAN2 transceiver) for solder defects
+
+### CAN1 transmits but no other node sees it
+
+1. Check 3-pin screw terminal wiring (CAN_H, CAN_L)
+2. Confirm sensor is Active in the Configure menu
+3. Verify the receiving node is on the same bus, not a sibling harness
 
 ## Next Lab Preview
 
-In Lab 05, you will use your OpenBridge to:
-- Profile a complete NMEA 2000 network
-- Build device inventory
-- Create frequency baselines
-- Identify high-value targets
+In Lab 05, you will use your NEMO to:
 
-**Ensure your hardware is working before next lab!**
+- Profile a complete NMEA 2000 network
+- Build a device inventory using the Live Data menu and `candump` capture
+- Establish frequency baselines (per-PGN message rates)
+- Identify high-value targets for the spoofing labs in Phase 2
+
+**Ensure your hardware is fully operational before next lab.** Replacement boards from `nemo@jamescampbell.org` typically take 1+ weeks to ship; flag any unresolved issues to the instructor today.
 
 ## References
 
-- [Teensy Documentation](https://www.pjrc.com/teensy/)
-- [MCP2515 Datasheet](https://www.microchip.com)
-- [OpenBridge GitHub](https://github.com/[org]/openbridge)
+- [NEMO Repository (Soups71/NEMO)](https://github.com/Soups71/NEMO)
+- [NEMO PCB Design Reference](https://github.com/Soups71/NEMO/blob/main/Documentation/PCB_Design.md)
+- [NEMO Operations Guide](https://github.com/Soups71/NEMO/blob/main/Documentation/Operations_Guide.md)
+- [Teensy 4.0 Documentation](https://www.pjrc.com/teensy/)
+- [PlatformIO Documentation](https://docs.platformio.org/)
+- [NMEA 2000 Library (Lappalainen)](https://github.com/ttlappalainen/NMEA2000)

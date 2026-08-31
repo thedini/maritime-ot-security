@@ -114,12 +114,12 @@ Students construct understanding through:
 - **Deliverables**: Parser for position, heading, engine data
 - **Common issues**: Sign extension for negative values, unit conversions
 
-#### **Week 4: OpenBridge Hardware Build**
-- **Class**: Teensy architecture, MCP2515 configuration, SPI communication
-- **Lab 04**: Hardware assembly and firmware flashing
-- **Deliverables**: Working OpenBridge device with test traffic
-- **Common issues**: Wiring errors, SPI bus conflicts, termination resistors
-- **NOTE**: Order hardware 4-6 weeks in advance!
+#### **Week 4: NEMO Hardware Build**
+- **Class**: Teensy 4.0 architecture, dual FlexCAN controllers, the NEMO PCB layout (TJA1050s, OLED, pots, buttons, M12)
+- **Lab 04**: Inspect / solder / flash the NEMO board
+- **Deliverables**: Working NEMO device showing the OLED main menu and streaming candump output
+- **Common issues**: Cold solder joints (especially OLED I2C and Teensy headers), wrong USB cable (charge-only), opening parent `NEMO/` folder in PlatformIO instead of `NEMO/SRC/`
+- **NOTE**: Path A (DIY) requires 6–8 weeks of procurement lead time (PCB fab is the slow line item); Path B (pre-built boards from `nemo@jamescampbell.org`) needs 2–3 weeks
 
 #### **Week 5: Reconnaissance Techniques**
 - **Class**: Passive monitoring, device enumeration, timing analysis
@@ -286,7 +286,7 @@ sudo dd if=openplotter-xxx.img of=/dev/sdX bs=4M status=progress
 # Enable CAN kernel modules
 sudo modprobe can
 sudo modprobe can_raw
-sudo modprobe mcp251x
+sudo modprobe mcp251x  # Raspberry Pi CAN Hat driver — the Hat uses an MCP2515 CAN controller, distinct from NEMO (which uses the Teensy's native FlexCAN)
 
 # Bring up CAN0 at 250kbps (NMEA 2000 standard)
 sudo ip link set can0 type can bitrate 250000
@@ -475,35 +475,41 @@ Show how these appear on a real chart plotter
 
 ### Class 03: Hardware Build
 
-**Learning objectives**: Understand Teensy platform, interface with MCP2515, debug hardware
+**Learning objectives**: Understand the Teensy 4.0 platform and its dual native FlexCAN controllers; understand the NEMO PCB layout and the rationale for dual-bus inject + monitor; build (or verify) a NEMO board and flash the firmware
 
 **This is not a lecture class**: Make it a workshop
-- Tables with hardware stations
-- Instructor circulates helping with assembly
+- Tables with assembly stations
+- Instructor circulates helping with soldering and PlatformIO setup
 - TAs or advanced students can assist
 
 **Safety first**:
-- Soldering iron safety review
+- Soldering iron safety review (burn hazard, fume extraction)
 - ESD precautions
-- Proper wire stripping technique
+- Eye protection during soldering
 
-**Assembly stations**:
-1. Soldering station (headers on Teensy and MCP2515)
-2. Wiring station (breadboard connections)
-3. Testing station (firmware upload and verification)
+**Assembly stations** (Path A):
+1. Inspection station (multimeter continuity check pre-power)
+2. Soldering station (Teensy headers, screw terminal, OLED header, M12, buttons, pots)
+3. Programming station (PlatformIO build + Teensy Loader flash)
+4. Verification station (OLED splash, candump stream, network connection test)
+
+**Path B (pre-built boards)**: skip stations 1 and 2; inspection moves to a quick visual check.
 
 **Provide**:
-- Wiring diagrams printed in color
+- Printed BOM checklist
 - Multimeter for continuity testing
-- Pre-flashed firmware on SD card (backup)
+- USB-Micro-B cables (data-capable — verify before lab)
+- Reference NEMO board (fully populated, working) for A/B comparison
+- Pre-cloned `Soups71/NEMO` repo on a thumb drive (saves clone time on slow lab WiFi)
 
 **Common issues**:
-- Reversed polarity on power
-- Crossed MOSI/MISO
-- Insufficient 3.3V power supply
-- Missing termination resistors when testing
+- Reversed Teensy insertion (pin-1 marker — check before USB power)
+- Cold solder joints on the OLED header (board boots, screen blank)
+- Bridges between adjacent Teensy header pins
+- Wrong USB cable (charge-only) — Teensy Loader doesn't see the board
+- Student opens `NEMO/` folder in PlatformIO instead of `NEMO/SRC/` (no `platformio.ini` at that level)
 
-**Success criteria**: Device connects, sends/receives message
+**Success criteria**: OLED splash → main menu navigation works, candump stream visible at 115200 baud, at least one PGN observed when connected to test network
 
 ---
 
@@ -981,7 +987,7 @@ Assessed throughout semester:
 
 #### Problem: Teensy not recognized by computer
 
-**Symptoms**: Device not appearing in Arduino IDE, can't upload firmware
+**Symptoms**: Device not appearing in PlatformIO / Teensy Loader, can't upload firmware
 
 **Solutions**:
 1. Try different USB cable (some are charge-only, need data cable)
@@ -995,23 +1001,22 @@ Assessed throughout semester:
 **Symptoms**: `candump` shows no traffic from student device
 
 **Solutions**:
-1. Check wiring: MOSI (11), MISO (12), SCK (13), CS (10) for Teensy 4.x
-2. Verify CAN_H and CAN_L connections (not swapped)
-3. Check termination resistors (120Ω) at both ends of bus
-4. Measure voltage: CAN_H should be ~3.5V, CAN_L ~1.5V when idle
-5. Verify bitrate: 250kbps for NMEA 2000
-6. Check if CAN interface is up: `ip link show can0`
+1. Verify the M12 (CAN2) and screw terminal (CAN1) wiring at the harness — CAN_H to CAN_H, CAN_L to CAN_L (not swapped)
+2. Check termination resistors (120Ω) at both ends of bench harness (commercial NMEA 2000 networks have these built in)
+3. Measure voltage: CAN_H ~3.5V, CAN_L ~1.5V when idle
+4. Verify the firmware was actually uploaded — open PlatformIO serial monitor at 115200 and confirm the boot banner
+5. Confirm at least one other node is transmitting on the bus (CAN1 needs an ACK from another node; FlexCAN loopback works for solo tests)
 
-#### Problem: MCP2515 communication failure
+#### Problem: NEMO board boots but OLED is blank
 
-**Symptoms**: SPI errors, initialization fails
+**Symptoms**: candump stream works, but OLED shows nothing
 
 **Solutions**:
-1. Verify 3.3V or 5V logic level compatibility
-2. Check SPI bus not shared with SD card or other peripherals
-3. Measure with oscilloscope if available (clock, data lines)
-4. Try lower SPI clock speed in firmware
-5. Replace MCP2515 module (manufacturing defects happen)
+1. Reflow solder joints on Teensy pins 18/19 (I2C SDA/SCL) and the OLED header
+2. Verify the OLED is SH1106, not SSD1306 (firmware uses VEGA_SH1106; SSD1306 modules ship with identical packaging)
+3. Confirm I2C address — defaults to 0x3C; some modules use 0x3D
+4. Reseat the OLED on its 4-pin header
+5. Try a known-good OLED from spares
 
 ### Software Problems
 
@@ -1049,16 +1054,19 @@ Assessed throughout semester:
 
 #### Lab 04: Hardware assembly issues
 
-**Symptom**: Device built but not working
+**Symptom**: NEMO built but not working
 
 **Checklist**:
 - [ ] Power LED on Teensy illuminated?
-- [ ] MCP2515 power connections correct?
-- [ ] SPI wiring: MOSI, MISO, SCK, CS correct pins?
-- [ ] CAN_H and CAN_L not swapped?
-- [ ] Termination resistors present (120Ω)?
-- [ ] Firmware uploaded successfully?
-- [ ] Correct Teensy board selected in Arduino IDE?
+- [ ] Teensy seated correctly (pin-1 marker aligned with PCB silkscreen)?
+- [ ] Visible solder bridges or cold joints (especially Teensy headers and OLED header)?
+- [ ] U2 (CAN1) and U3 (CAN2) TJA1050s populated in correct orientation?
+- [ ] OLED reseated on header and SH1106 (not SSD1306)?
+- [ ] CAN_H and CAN_L on M12 + screw terminal not swapped?
+- [ ] Termination resistors present on bench harness (120Ω)?
+- [ ] Firmware uploaded successfully (PlatformIO Upload completed without error)?
+- [ ] PlatformIO opened on `NEMO/SRC/` (not parent `NEMO/`)?
+- [ ] USB cable is data-capable (some USB cables are charge-only)?
 
 #### Lab 06: Spoofing not affecting chart plotter
 

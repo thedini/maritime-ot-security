@@ -401,7 +401,7 @@ An attacker wants to flood the bus with highest-priority messages.
 
 ### CRC Verification
 
-CAN includes a 15-bit CRC for error detection. The MCP2515 handles this automatically, but let's understand it.
+CAN includes a 15-bit CRC for error detection. The Teensy's FlexCAN controller handles this automatically, but let's understand it.
 
 ### Exercise 6.1: Identifying Errors
 

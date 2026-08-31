@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="780" viewBox="0 0 1200 780" font-family="Helvetica,Arial,sans-serif">
+<rect width="1200" height="780" fill="#ffffff"/>
+<text x="600" y="54" text-anchor="middle" font-size="36" font-weight="700" fill="#002B5C">CAN Arbitration — Lower ID Wins</text>
+<text x="600" y="90" text-anchor="middle" font-size="20" fill="#5b6b7a">Nodes transmit at once; 0 is dominant and overrides 1. A node that sends 1 but reads 0 loses.</text>
+<!-- column headers (bits 1..7, MSB first) -->
+<g font-size="18" fill="#5b6b7a" text-anchor="middle">
+<text x="300" y="150">ID (11-bit)</text>
+<text x="430" y="150">b1</text><text x="530" y="150">b2</text><text x="630" y="150">b3</text><text x="730" y="150">b4</text><text x="830" y="150">b5</text><text x="930" y="150">b6</text><text x="1030" y="150">b7</text>
+</g>
+<!-- decision column highlight (b2) -->
+<rect x="490" y="165" width="80" height="270" fill="#fdf3e0" stroke="#C8A05A" stroke-width="2"/>
+<text x="530" y="460" text-anchor="middle" font-size="15" fill="#9a7320">decision bit</text>
+<text x="600" y="430" text-anchor="middle" font-size="17" fill="#b23b3b">At b2, Node B sends 1 but reads 0 → loses arbitration and backs off (retries later)</text>
+<!-- Node A row -->
+<text x="120" y="210" font-size="20" font-weight="700" fill="#002B5C">Node A · 0x100</text>
+<g font-size="24" text-anchor="middle" fill="#11202b">
+<text x="430" y="212">0</text><text x="530" y="212" fill="#1c7a3f" font-weight="700">0</text><text x="630" y="212">1</text><text x="730" y="212">0</text><text x="830" y="212">0</text><text x="930" y="212">0</text><text x="1030" y="212">0</text></g>
+<!-- Node B row -->
+<text x="120" y="290" font-size="20" font-weight="700" fill="#b23b3b">Node B · 0x200</text>
+<g font-size="24" text-anchor="middle">
+<text x="430" y="292" fill="#11202b">0</text><text x="530" y="292" fill="#b23b3b" font-weight="700">1</text>
+<text x="630" y="292" fill="#bbbbbb">0</text><text x="730" y="292" fill="#bbbbbb">0</text><text x="830" y="292" fill="#bbbbbb">0</text><text x="930" y="292" fill="#bbbbbb">0</text><text x="1030" y="292" fill="#bbbbbb">0</text></g>
+
+<!-- Bus row -->
+<text x="120" y="372" font-size="20" font-weight="700" fill="#5b6b7a">Bus (dominant)</text>
+<g font-size="24" text-anchor="middle" fill="#002B5C" font-weight="700">
+<text x="430" y="374">0</text><text x="530" y="374">0</text><text x="630" y="374">1</text><text x="730" y="374">0</text><text x="830" y="374">0</text><text x="930" y="374">0</text><text x="1030" y="374">0</text></g>
+<line x1="110" y1="235" x2="1070" y2="235" stroke="#d6e0ea"/><line x1="110" y1="315" x2="1070" y2="315" stroke="#d6e0ea"/>
+<!-- winner / security note -->
+<rect x="150" y="500" width="900" height="70" rx="10" fill="#eef3f8" stroke="#3F88C5" stroke-width="2"/>
+<text x="600" y="544" text-anchor="middle" font-size="22" font-weight="700" fill="#002B5C">✓ Node A (0x100) wins — lower ID = higher priority</text>
+<rect x="150" y="600" width="900" height="86" rx="10" fill="#fbeaea" stroke="#b23b3b" stroke-width="2"/>
+<text x="600" y="636" text-anchor="middle" font-size="19" font-weight="700" fill="#b23b3b">Security implication</text>
+<text x="600" y="664" text-anchor="middle" font-size="18" fill="#11202b">An attacker sending ID 0x000 wins every arbitration it enters (at the next idle) → can starve all other traffic (DoS). No sender authentication.</text>
+</svg>

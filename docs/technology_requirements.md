@@ -25,9 +25,9 @@ date: "2026"
 This document specifies all technology requirements for offering the Maritime OT Security course. The course emphasizes low-cost, open-source solutions to ensure accessibility for institutions with limited budgets.
 
 **Design principles**:
-- Student hardware cost under $50 per person
+- Student hardware cost under $55 per person (NEMO PCB-based kit)
 - Preference for open-source software (no licensing fees)
-- Standard off-the-shelf components (no custom fabrication)
+- Open hardware: KiCad PCB files released, fabricated by any low-cost service (e.g., JLCPCB) or available pre-built from the NEMO maintainers
 - Reproducible setup at any institution
 
 **Minimum class size**: 8 students
@@ -39,65 +39,75 @@ This document specifies all technology requirements for offering the Maritime OT
 
 ### Per-Student Hardware Kit
 
-Each student (or pair of students) needs the following components to build an OpenBridge CAN interface:
+Each student (or pair of students) needs the following components to build a NEMO board. NEMO is a custom PCB built around the Teensy 4.0's two native FlexCAN controllers — there is **no external CAN controller** (no MCP2515). PCB design files (KiCad 9.0) and 3D-printable case STLs live in the [Soups71/NEMO](https://github.com/Soups71/NEMO) repository.
 
 | Component | Specification | Quantity | Unit Cost | Source | Total |
 |-----------|---------------|----------|-----------|--------|-------|
-| **Teensy 4.0 or 4.1** | ARM Cortex-M7 @ 600MHz, 1MB RAM | 1 | $23.80 | PJRC.com | $23.80 |
-| **MCP2515 CAN Module** | SPI-to-CAN controller with oscillator | 1 | $4.50 | Amazon/AliExpress | $4.50 |
-| **TJA1050 Transceiver** | CAN transceiver (usually included on MCP2515 board) | 1 | $0 | Included | $0 |
-| **Solderless Breadboard** | 400 or 830 tie-points | 1 | $3.50 | Amazon | $3.50 |
-| **Jumper Wire Kit** | Male-male, male-female, various lengths | 1 set | $5.00 | Amazon | $5.00 |
-| **USB Cable** | Micro-B (Teensy 4.0) or Micro-B/C (Teensy 4.1) | 1 | $3.00 | Amazon | $3.00 |
-| **CAN Cable** | 2-conductor twisted pair, 1-2 meters | 1 | $2.00 | DigiKey/Local | $2.00 |
-| **120Ω Resistors** | 1/4W termination resistors | 2 | $0.20 | DigiKey | $0.40 |
-| | | | **Per-student total** | | **$42.20** |
+| **Teensy 4.0** | NXP i.MX RT1062, ARM Cortex-M7 @ 600 MHz, dual FlexCAN | 1 | $23.80 | PJRC.com / SparkFun DEV-15583 | $23.80 |
+| **TJA1050 CAN Transceiver** | 5V high-speed CAN transceiver (one per bus) | 2 | $1.50 | Amazon / DigiKey | $3.00 |
+| **SH1106 128×64 OLED** | I2C, monochrome | 1 | $5.00 | Amazon | $5.00 |
+| **10kΩ Potentiometer** | Panel-mount, linear taper | 3 | $0.50 | Amazon | $1.50 |
+| **Tactile Push Button** | THT, 6 mm body | 4 | $0.20 | Amazon | $0.80 |
+| **NMEA 2000 M12 Connector** | Field-attachable, female (micro-C) | 1 | $8–$15 | RS Components / DigiKey | $8.00–$15.00 |
+| **3-Pin Screw Terminal** | 5 mm pitch | 1 | $0.50 | Amazon | $0.50 |
+| **Custom NEMO PCB** | KiCad files in NEMO repo | 1 | $2–$5 | JLCPCB.com (or equiv.) | $2.00–$5.00 |
+| **USB Micro-B Cable** | Power + programming + serial | 1 | $3.00 | Amazon | $3.00 |
+| | | | **Per-student total** | | **$47.60–$57.60** |
+
+**Two procurement paths**:
+
+- **Path A — DIY** (recommended for the educational experience): order the PCB and components per the BOM above, then have students assemble per Lab 04. Adds ~2 weeks of PCB fab lead time to the timeline.
+- **Path B — Pre-built**: email `nemo@jamescampbell.org` with subject "Board Request" to coordinate shipped, pre-assembled NEMO boards. Use this when soldering capacity or schedule does not allow Path A.
 
 **Optional but recommended**:
-- **Soldering iron kit** ($15-25): If students solder headers on Teensy (more permanent)
-- **Logic analyzer** ($8): Shared among groups for SPI debugging (USB Logic Analyzer 8CH)
+- **3D-printed enclosure** (~$1 in filament): STLs in the NEMO repo; protects the board and gives students a finished product to pocket
+- **Logic analyzer** ($8): Shared among groups for I2C / OLED debugging (USB Logic Analyzer 8CH)
 - **Carrying case** ($5): Protection for hardware kit
 
 #### Hardware Notes
 
 **Teensy 4.0 vs 4.1**:
-- Teensy 4.0: Sufficient for this course, lower cost
-- Teensy 4.1: More I/O pins, Ethernet PHY, SD card slot (useful for extensions)
-- Both use same firmware; choice depends on budget and future plans
+- Teensy 4.0 is the canonical NEMO MCU and matches the PCB footprint
+- Teensy 4.1 has more I/O, Ethernet PHY, and an SD card slot but is **not a drop-in** for the NEMO PCB — only switch if you also redo the board
+- Both have the same dual FlexCAN; either works at the firmware level
 
-**MCP2515 Module Variants**:
-- Ensure module includes TJA1050 or similar transceiver
-- Some modules have voltage level converters (3.3V/5V)
-- Verify 8MHz or 16MHz crystal oscillator (affects bitrate configuration)
-- Recommended: "MCP2515 CAN Bus Module TJA1050 Receiver SPI" on Amazon (~$5 for 2)
+**TJA1050 vs Alternatives**:
+- The NEMO PCB is laid out for two TJA1050s (one per bus)
+- TJA1051 is electrically compatible and acceptable
+- Verify the part is the **5V** variant — NEMO routes 5V to the transceivers
 
-**Breadboard Quality**:
-- Higher-quality breadboards have better contact reliability
-- Avoid ultra-cheap options that cause intermittent connections
-- Consider "proto boards" for more permanent assemblies
+**OLED Driver Chip**:
+- NEMO firmware uses `VEGA_SH1106` plus Adafruit GFX
+- Some Amazon listings ship SSD1306 modules in identical-looking packaging; verify SH1106 before ordering
+- I2C address typically 0x3C; a few modules use 0x3D — confirm in the firmware if using a non-default
 
 **Cable Specifications**:
 - CAN requires twisted pair (reduces EMI)
 - Standard: CAT5/CAT6 cable works well (use one pair)
-- Industrial: DeviceNet or CAN-specific cable (more expensive)
-- Length: 1-2 meters sufficient for lab benches
+- Industrial: NMEA 2000 micro-C or DeviceNet cable (more expensive but field-correct)
+- Length: 1-2 meters sufficient for lab benches; commercial NMEA 2000 networks have 120Ω termination built in
 
-#### Procurement Timeline
+#### Procurement Timeline (Path A — DIY)
+
+**8 weeks before semester start**:
+- Decide procurement path (A vs B). Path B (pre-built) skips the PCB fab steps below — coordinate with `nemo@jamescampbell.org` for ship date
+- Place PCB order at JLCPCB (or equivalent): export gerbers from `Soups71/NEMO/PCB/NEMO.kicad_pro`, upload, order quantity = (class size × 1.2) for 20% spares. Typical fab + ship time is 2–3 weeks
+- **Enable JLCPCB's SMT assembly service for the TJA1050 CAN transceivers and any 0805 decoupling capacitors. This is required for Path A — students do not hand-solder SOIC-8 surface-mount parts.** The added per-board cost (typically $3–$8) is a fraction of the time and failure-rate cost of attempting SOIC soldering with non-EE students. SMT assembly is also why Path A's lab time budget is realistic.
 
 **6 weeks before semester start**:
-- Place bulk order for Teensy boards (PJRC.com)
-- Order MCP2515 modules, breadboards, wire kits (Amazon)
-- Order cable and resistors (DigiKey or local electronics supplier)
+- Place bulk order for Teensy 4.0 boards (PJRC.com — educational discount on 20+)
+- Order TJA1050 transceivers, OLEDs, pots, buttons, screw terminals, USB cables (Amazon / DigiKey)
+- Order NMEA 2000 M12 connectors (RS Components / DigiKey — slowest line item)
 
 **4 weeks before**:
-- Receive and inventory all components
+- Receive PCBs and components; inspect against BOM
 - Assemble 2-3 spare kits (for failures/loaners)
-- Test one complete kit end-to-end
+- Build one complete reference kit end-to-end and verify boot + Live Data
 
 **2 weeks before**:
 - Prepare kit bags/boxes for each student
 - Label kits with inventory checklist
-- Flash firmware on USB sticks for distribution
+- Pre-flash firmware on the Teensy if you want students to skip Part 4 of Lab 04 on day 1
 
 **Week 1**:
 - Distribute kits to students
@@ -106,18 +116,21 @@ Each student (or pair of students) needs the following components to build an Op
 #### Recommended Vendors
 
 **Primary sources**:
-- **PJRC.com**: Teensy boards (official source, reliable)
-- **Amazon**: MCP2515 modules, breadboards, cables, wire kits
-- **DigiKey / Mouser**: Resistors, connectors, professional-grade components
-- **AliExpress**: Budget alternative for MCP2515 (slower shipping, 3-4 weeks)
+- **PJRC.com**: Teensy 4.0 boards (official source, reliable)
+- **JLCPCB**: Custom NEMO PCB fabrication (KiCad files in [Soups71/NEMO](https://github.com/Soups71/NEMO/tree/main/PCB))
+- **NEMO maintainers**: Pre-built boards via `nemo@jamescampbell.org` (Path B)
+- **Amazon**: TJA1050s, OLEDs, pots, buttons, USB cables, screw terminals
+- **DigiKey / Mouser**: M12 NMEA 2000 connectors, precision components, resistors
+- **RS Components**: NMEA 2000-grade M12 micro-C field connectors
 
 **Bulk pricing**:
-- PJRC offers educational discounts for orders of 20+ Teensy boards
-- Contact: sales@pjrc.com with institution details
+- PJRC offers educational discounts for orders of 20+ Teensy 4.0 boards (`sales@pjrc.com`)
+- JLCPCB volume discounts kick in at 5+ boards; combine with neighboring instructors if needed
+- Pre-built board pricing depends on quantity; contact `nemo@jamescampbell.org` for a quote
 
 **Spare parts inventory**:
-- Keep 10-15% extra components for failures
-- Most common failures: USB cables, breadboard contacts, MCP2515 modules
+- Keep 15-20% extra components for failures (PCB fab is slow; you don't want to wait 3 weeks mid-semester for a replacement)
+- Most common failures: USB cables, OLED solder joints, button caps
 
 ---
 
@@ -171,10 +184,10 @@ Equipment that students share (not per-person):
 
 | Equipment | Purpose | Quantity | Cost | Notes |
 |-----------|---------|----------|------|-------|
-| **Oscilloscope** | Debugging SPI, viewing CAN signals | 1-2 | $400 | Entry-level DSO (Rigol DS1054Z) |
-| **Logic Analyzer** | Capture digital signals | 2-4 | $50-200 | USB logic analyzer or Saleae clone |
-| **Multimeter** | Voltage, continuity testing | 4-6 | $20 | Basic digital multimeter sufficient |
-| **Soldering Station** | Attaching headers to Teensy | 2-4 | $40 | Temperature-controlled preferred |
+| **Oscilloscope** | Viewing CAN differential signals, I2C debug | 1-2 | $400 | Entry-level DSO (Rigol DS1054Z) |
+| **Logic Analyzer** | Capture I2C / GPIO for OLED and button debug | 2-4 | $50-200 | USB logic analyzer or Saleae clone |
+| **Multimeter** | Voltage, continuity testing on populated PCBs | 4-6 | $20 | Basic digital multimeter sufficient |
+| **Soldering Station** | Populating THT components on NEMO PCB (Teensy headers, screw terminal, OLED header, M12, buttons, pots) | 2-4 | $40 | Temperature-controlled — required for Path A. SMD parts are JLCPCB-assembled, not student-soldered. |
 | **Fume Extractor** | Soldering safety | 1-2 | $30 | Fan with filter |
 | **Wire Stripper** | Cable preparation | 2-4 | $10 | Automatic stripper recommended |
 | **Heat Shrink Kit** | Cable management | 1 | $15 | Assorted sizes |
@@ -208,31 +221,43 @@ All software for this course is **open-source and free**.
 
 ### Required Software Stack
 
-#### 1. Arduino Development Environment
+#### 1. Embedded Development Environment
 
-**Arduino IDE**:
-- Version: 1.8.19 or 2.x
-- Download: https://www.arduino.cc/en/software
+NEMO uses the [PlatformIO](https://platformio.org/) build system inside Visual Studio Code. PlatformIO handles the Teensyduino toolchain and library dependencies (NMEA2000, NMEA2000_Teensyx, U8g2, Adafruit GFX, VEGA_SH1106) automatically — students do not need to install Arduino IDE.
+
+**Visual Studio Code**:
+- Download: https://code.visualstudio.com
 - Platforms: Windows, macOS, Linux
 
-**Teensyduino Add-on**:
-- Version: Must match Arduino IDE version
+**PlatformIO IDE extension**:
+- Install from the VS Code Extensions panel (Ctrl+Shift+X / Cmd+Shift+X)
+- Search "PlatformIO IDE" → Install
+- First launch downloads the toolchain (a few minutes — do this before lab day)
+
+**Teensyduino**:
 - Download: https://www.pjrc.com/teensy/td_download.html
-- Adds Teensy board support to Arduino IDE
+- Provides the Teensy Loader (the GUI utility that pushes firmware to the board) and udev rules
+- Skip the Arduino IDE step in the installer — PlatformIO doesn't need it
 
 **Installation instructions**:
 ```bash
 # Linux (apt-based)
 sudo apt-get update
-sudo apt-get install arduino
+sudo apt-get install code  # if not already installed
 
-# Download Teensyduino installer
+# Download Teensyduino installer (Linux x64)
 wget https://www.pjrc.com/teensy/td_159/TeensyduinoInstall.linux64
 chmod +x TeensyduinoInstall.linux64
 ./TeensyduinoInstall.linux64
 
-# Windows/macOS: Use graphical installers
+# udev rules for Teensy programming (Linux)
+sudo cp 00-teensy.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+
+# Windows/macOS: Use graphical installers for VS Code, PlatformIO, Teensyduino
 ```
+
+**Note on libraries**: `SRC/platformio.ini` declares all firmware dependencies. PlatformIO downloads them on first build. Use **`NMEA2000_Teensyx`** (the FlexCAN driver) — NEMO does **not** use `NMEA2000_mcp` or any MCP2515-based path.
 
 **Required Arduino Libraries**:
 - FlexCAN_T4 (for Teensy 4.x CAN support)
@@ -413,7 +438,7 @@ sudo apt-get install git
               +-------------------+-------------------+
               |                   |                   |
          [Student 1]         [Student 2]    ...  [Student N]
-         (Teensy+MCP2515)    (Teensy+MCP2515)
+            (NEMO)              (NEMO)             (NEMO)
 ```
 
 **Physical wiring**:
@@ -548,15 +573,15 @@ while True:
 
 ### Budget Summary by Class Size
 
-**Cost per student**: $42 (hardware kit)
+**Cost per student**: ~$50 (NEMO hardware kit; range $48–$58 depending on M12 connector and PCB fab pricing)
 **Fixed costs**: $625 (infrastructure) + $1200 (shared equipment) = $1825
 
 | Class Size | Student Kits | Infrastructure | Shared Equip | Total | Per Student |
 |------------|--------------|----------------|--------------|-------|-------------|
-| 10 students | $420 | $625 | $1200 | $2,245 | $224.50 |
-| 15 students | $630 | $625 | $1200 | $2,455 | $163.67 |
-| 20 students | $840 | $625 | $1200 | $2,665 | $133.25 |
-| 24 students | $1,008 | $625 | $1200 | $2,833 | $118.04 |
+| 10 students | $500 | $625 | $1200 | $2,325 | $232.50 |
+| 15 students | $750 | $625 | $1200 | $2,575 | $171.67 |
+| 20 students | $1,000 | $625 | $1200 | $2,825 | $141.25 |
+| 24 students | $1,200 | $625 | $1200 | $3,025 | $126.04 |
 
 **Amortization**: Infrastructure and shared equipment last 5+ years, so effective per-student cost decreases with multiple course offerings.
 
@@ -580,10 +605,11 @@ while True:
 ### Cost Reduction Strategies
 
 **Hardware**:
-- Bulk purchasing (20+ Teensy boards = educational discount)
-- AliExpress for MCP2515 modules (slower shipping, lower cost)
+- Bulk purchasing (20+ Teensy 4.0 boards = educational discount from PJRC)
+- Single combined PCB run from JLCPCB across all sections (volume discount)
 - Pair students instead of individual kits (halves hardware cost)
-- Reuse kits from previous semesters (replace damaged components only)
+- Reuse boards from previous semesters (NEMO PCBs are durable; replace consumables only)
+- Skip the 3D-printed enclosure for cost-sensitive offerings
 
 **Software**:
 - Already 100% open-source (no licensing fees)
@@ -601,9 +627,11 @@ while True:
 - Total ongoing: ~$100-150/year
 
 **Replacement schedule**:
-- Teensy boards: 5+ years (very reliable)
-- MCP2515 modules: 2-3 years (most common failure)
-- Breadboards: 2-3 years (contacts wear out)
+- Teensy 4.0 boards: 5+ years (very reliable)
+- NEMO PCBs: 5+ years (no electromechanical wear; replace if physically damaged)
+- TJA1050 transceivers: 5+ years (most common failure point is solder fatigue, not the IC)
+- OLEDs: 3-5 years (the displays themselves dim slowly under heavy use)
+- Buttons / pots: 2-3 years (mechanical wear)
 - Cables: 3-5 years
 - Raspberry Pi: 5+ years
 - Oscilloscope / shared equipment: 10+ years
@@ -621,11 +649,24 @@ while True:
 - **Educational discount**: Available for 20+ units
 - **Notes**: Official source, excellent support, USA-based
 
+#### JLCPCB (NEMO PCB fabrication)
+- **Website**: https://jlcpcb.com
+- **Products**: Custom PCB fab from KiCad files; SMT assembly service (required for Path A)
+- **Advantages**: Very low per-board cost ($2–$5 for small qty), reliable quality, SMT assembly removes the hardest soldering step (SOIC-8 transceivers) — critical for non-EE student cohorts
+- **Disadvantages**: 2–3 week lead time including shipping; minimum batch size (typically 5 boards); SMT assembly adds $3–$8/board but is mandatory for the curriculum
+- **Recommendation**: Order in bulk for the whole class; use KiCad files in [Soups71/NEMO/PCB](https://github.com/Soups71/NEMO/tree/main/PCB)
+
+#### NEMO Maintainers (Pre-built boards, Path B)
+- **Contact**: `nemo@jamescampbell.org`
+- **Subject line**: "Board Request"
+- **Use when**: your program lacks soldering capacity, the schedule does not allow PCB fab lead time, or you are running an evening class / workshop and need turnkey hardware
+- **Pricing**: depends on quantity and assembly state; contact for quote
+
 #### Amazon
-- **Products**: MCP2515 modules, breadboards, cables, wire kits
+- **Products**: TJA1050 transceivers, OLEDs, pots, buttons, screw terminals, USB cables
 - **Advantages**: Fast shipping (Prime), easy returns
-- **Disadvantages**: Variable quality, some counterfeit components
-- **Recommendation**: Check reviews, prefer "Amazon's Choice" items
+- **Disadvantages**: Variable quality (especially OLED driver chip variants), some counterfeit components
+- **Recommendation**: Check reviews; verify OLED is SH1106 (not SSD1306); buy 20% extras
 
 #### DigiKey
 - **Website**: https://www.digikey.com
@@ -652,7 +693,7 @@ while True:
 
 #### AliExpress (budget option)
 - **Website**: https://www.aliexpress.com
-- **Products**: MCP2515 modules, cables, breadboards
+- **Products**: TJA1050 ICs, OLEDs, buttons, pots, USB cables
 - **Advantages**: Very low cost (often 1/3 of Amazon)
 - **Disadvantages**: 3-6 week shipping, variable quality, no easy returns
 - **Recommendation**: Order early, buy extras, test thoroughly
@@ -690,18 +731,18 @@ while True:
 ### Low-Budget Option (<$1000 total)
 
 **Changes**:
-- Pair students (12 students = 6 kits)
+- Pair students (12 students = 6 NEMO kits)
+- Procurement Path B (pre-built boards from `nemo@jamescampbell.org`) to skip soldering equipment
 - Single Raspberry Pi instructor station
 - No oscilloscope (use $10 USB logic analyzer only)
-- Minimal soldering (use pre-soldered Teensy or solderless headers)
-- Reuse kits semester-to-semester
+- Reuse boards semester-to-semester
 
 **Cost breakdown**:
-- 6 student kits @ $42 = $252
+- 6 NEMO kits @ $50 = $300
 - 1 Raspberry Pi setup = $100
 - Logic analyzers and shared tools = $200
 - Cables and infrastructure = $100
-- **Total**: ~$650
+- **Total**: ~$700
 
 **Trade-offs**:
 - Limited to smaller class sizes
@@ -743,9 +784,9 @@ while True:
 - Synchronous lab time coordination
 - Assessment integrity (exams)
 
-### Raspberry Pi as Student Device (Teensy Alternative)
+### Raspberry Pi as Student Device (NEMO Alternative)
 
-**Option**: Use Raspberry Pi Zero W + CAN hat instead of Teensy
+**Option**: Use Raspberry Pi Zero W + CAN hat instead of NEMO
 
 **Pros**:
 - Linux environment directly on device
@@ -753,12 +794,14 @@ while True:
 - More familiar for students
 
 **Cons**:
-- Higher cost (~$30 for Pi Zero + $25 for CAN hat = $55 vs $42 for Teensy)
-- Larger form factor
+- Comparable cost (~$30 for Pi Zero + $25 for CAN hat = $55 vs ~$50 for NEMO)
+- Single CAN bus only (no dual-bus inject + monitor architecture)
+- Larger form factor; no integrated UI
 - Requires microSD card management
 - Power consumption higher
+- Cannot run the NEMO firmware as-is — different software stack
 
-**Verdict**: Teensy is more cost-effective and pedagogically better (teaches embedded programming)
+**Verdict**: NEMO is the canonical platform for this curriculum. Its dual-bus architecture is the reason the IDS labs (lab_09 onward) work as designed. The Raspberry Pi alternative is suitable only for limited-scope variants of the course.
 
 ---
 
@@ -838,23 +881,33 @@ while True:
 | Shipping | | | $15.00 |
 | **PJRC Total** | | | **$538.60** |
 
+**Vendor: JLCPCB (NEMO PCB fabrication)**
+| Item | Qty | Unit Price | Total |
+|------|-----|------------|-------|
+| NEMO PCB (5-up panel, 5 panels = 25 boards) | 25 | $1.00 | $25.00 |
+| SMT assembly service (TJA1050s + caps, REQUIRED for Path A) | 25 | $5.00 | $125.00 |
+| Shipping | | | $25.00 |
+| **JLCPCB Total** | | | **$175.00** |
+
 **Vendor: Amazon**
 | Item | Qty | Unit Price | Total |
 |------|-----|------------|-------|
-| MCP2515 CAN Module (2-pack) | 11 | $9.00 | $99.00 |
-| Breadboard 400-point (5-pack) | 5 | $12.00 | $60.00 |
-| Jumper wire kit | 20 | $5.00 | $100.00 |
+| TJA1050 CAN Transceiver (10-pack, if not pre-assembled) | 5 | $7.00 | $35.00 |
+| SH1106 128×64 OLED I2C | 25 | $5.00 | $125.00 |
+| 10kΩ Potentiometer (linear, panel-mount) | 75 | $0.50 | $37.50 |
+| Tactile push button (THT, 100-pack) | 1 | $8.00 | $8.00 |
+| 3-pin screw terminal (10-pack) | 3 | $5.00 | $15.00 |
 | USB Micro-B cable (5-pack) | 5 | $10.00 | $50.00 |
-| **Amazon Total** | | | **$309.00** |
+| **Amazon Total** | | | **$270.50** |
 
-**Vendor: DigiKey**
+**Vendor: DigiKey / RS Components**
 | Item | Qty | Unit Price | Total |
 |------|-----|------------|-------|
-| 120Ω resistors (1/4W, 100-pack) | 1 | $8.50 | $8.50 |
+| NMEA 2000 M12 micro-C connector (female, field-attachable) | 25 | $10.00 | $250.00 |
+| 120Ω resistors (1/4W, 100-pack) — for bench-only termination | 1 | $8.50 | $8.50 |
 | CAN cable (twisted pair, 50m) | 1 | $35.00 | $35.00 |
-| Screw terminals | 10 | $2.50 | $25.00 |
-| Shipping | | | $8.00 |
-| **DigiKey Total** | | | **$76.50** |
+| Shipping | | | $15.00 |
+| **DigiKey Total** | | | **$308.50** |
 
 **Vendor: Adafruit (Instructor Station)**
 | Item | Qty | Unit Price | Total |
@@ -866,13 +919,18 @@ while True:
 | Shipping | | | $10.00 |
 | **Adafruit Total** | | | **$202.00** |
 
-**Grand Total**: $1,126.10
+**Grand Total**: $1,494.60 (~$75/student for 20-student class with 5 spare boards)
 
-*(Add shared equipment and infrastructure as needed per budget)*
+*(Add shared equipment and infrastructure as needed per budget. M12 connectors dominate the per-board cost. For tighter budgets, substitute a second 3-pin screw terminal for the M12 — the network connection is then bench-only.)*
+
+**Path B alternative** (pre-built boards):
+- 22 NEMO boards (20 students + 2 spares) via `nemo@jamescampbell.org`: contact for current pricing, typical range $60–$90 per board fully assembled
+- Eliminates JLCPCB + Amazon component lines (saves ~$445 in parts coordination overhead but raises per-board cost)
+- Recommended for programs without soldering capacity or with very short procurement windows
 
 ---
 
-**Document Version**: 1.0
-**Last Updated**: 2026-01-06
+**Document Version**: 2.0 (NEMO PCB migration)
+**Last Updated**: 2026-04-25
 **Author**: Constantine Macris
 **License**: CC BY-SA 4.0

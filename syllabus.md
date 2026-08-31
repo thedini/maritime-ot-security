@@ -71,20 +71,31 @@ Upon completion, students will be able to:
 
 ### Hardware (per student or pair)
 
-| Item | Approximate Cost | Source |
-|------|------------------|--------|
-| Teensy 4.0 or 4.1 | $25 | PJRC.com |
-| MCP2515 CAN Module | $5 | Amazon/AliExpress |
-| TJA1050 Transceiver | $3 | Amazon/AliExpress |
-| Breadboard + Jumper Wires | $10 | Amazon |
-| **Total** | **~$43** | |
+The course uses **NEMO**, an open-source dual-bus NMEA 2000 board built around the Teensy 4.0's two native FlexCAN controllers. Two procurement paths are supported:
+
+**Path A — DIY (recommended for the educational experience):** order the PCB from JLCPCB using the KiCad files in the [NEMO repository](https://github.com/Soups71/NEMO/tree/main/PCB) **with SMT assembly turned on** for the TJA1050 transceivers and 0805 decoupling caps; students hand-solder only the through-hole components (Teensy headers, screw terminal, OLED header, M12 connector, buttons, pots) per Lab 04. SMT assembly is required, not optional — non-EE graduate students hand-soldering SOIC-8 parts is a high-failure-rate task that derails the rest of the semester.
+
+**Path B — Pre-built board:** for time-constrained programs, email `nemo@jamescampbell.org` with subject "Board Request" to coordinate a shipped, pre-assembled NEMO.
+
+| Item | Approximate Cost | Qty | Source |
+|------|------------------|-----|--------|
+| Teensy 4.0 | $23 | 1 | PJRC.com / SparkFun DEV-15583 |
+| TJA1050 CAN Transceiver | $1.50 | 2 | Amazon |
+| SH1106 128×64 OLED (I2C) | $5 | 1 | Amazon |
+| 10kΩ Potentiometer (panel-mount) | $0.50 | 3 | Amazon |
+| Tactile Push Button | $0.20 | 4 | Amazon |
+| NMEA 2000 M12 Connector | $8–$15 | 1 | RS Components / DigiKey |
+| 3-Pin Screw Terminal Block | $0.50 | 1 | Amazon |
+| Custom NEMO PCB (JLCPCB) | $2–$5 | 1 | JLCPCB.com |
+| **Total** | **~$42–$55** | | |
 
 <!--
 Instructor Notes:
-- Order hardware 4-6 weeks before course starts
-- Consider bulk ordering for cost savings
+- Order PCBs from JLCPCB 4-6 weeks before course starts (fabrication + shipping ~2-3 weeks)
+- Consider a single bulk PCB run for the whole class to lower per-board cost
 - Have 2-3 spare kits for failures/loaners
-- Pre-solder headers on Teensy if time is limited
+- For programs without soldering capacity, request pre-built boards via nemo@jamescampbell.org
+- Pre-solder Teensy headers before student lab if soldering time is limited (SMD parts are JLCPCB-assembled, never student-soldered)
 -->
 
 ### Software (all open-source)
