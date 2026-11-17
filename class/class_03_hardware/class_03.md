@@ -1,6 +1,6 @@
 ---
 title: "Class 03"
-subtitle: "OpenBridge Hardware Build"
+subtitle: "The NEMO Platform"
 author: "Constantine Macris"
 date: "2026"
 titlepage: true
@@ -12,552 +12,164 @@ book: true
 classoption: oneside
 code-block-font-size: \scriptsize
 description: |
-    Building the OpenBridge NMEA 2000 interface
+    The NEMO NMEA 2000 education and research platform
 ---
 
-# Class 03 -- OpenBridge Hardware Build
+# Class 03 -- The NEMO Platform
 
 ## Learning Outcomes
 
-- Identify components of the OpenBridge CAN interface
-- Understand CAN transceiver operation
-- Assemble Teensy + MCP2515 hardware
-- Flash OpenBridge firmware
-- Verify connectivity to NMEA 2000 network
+- Describe what NEMO is and what it can and cannot do
+- Identify the parts of a NEMO board and what each does
+- Explain why a second, independent capture interface is needed
+- Build, flash and power a NEMO board (versions 1.0.0 and 1.0.1)
+- Operate the sensor simulator and the live-data view
 
 ## Definitions
 
-- **MCU** -- Microcontroller Unit
-- **SPI** -- Serial Peripheral Interface
-- **Transceiver** -- Converts logic levels to CAN bus signals
-- **MCP2515** -- CAN controller IC (SPI interface)
-- **TJA1050** -- CAN transceiver IC
-- **Termination** -- 120Ω resistor at bus ends
+- **NEMO** -- NMEA 2000 Education and Maritime Operations platform: a Teensy 4.0 board with two CAN interfaces, a display, buttons, and potentiometers
+- **FlexCAN** -- The CAN controllers built into the Teensy 4.0 (two are used)
+- **CAN transceiver** -- Converts logic levels to CAN bus signals (TJA1050, 5 V)
+- **Sensor simulation** -- NEMO transmits NMEA 2000 messages as a configured device
+- **Capture interface** -- A separate listen-only tool (for example a Raspberry Pi with `candump`) used to record traffic for analysis
+- **Termination** -- 120 ohm resistor at each end of the bus
+
+## Credit and Versions
+
+NEMO was designed by James Campbell. The course uses the `thedini/NEMO` repository
+(a copy of the original project). NEMO versions 1.0.0 and 1.0.1 are supported by
+this course. The material below follows the 1.0.0 documentation; your instructor
+notes any 1.0.1 difference. Check the version on the board silkscreen and the
+About screen before you start.
 
 ## Reading Assignment
 
-- OpenBridge README and documentation
-- Teensy 4.x pinout reference
-- MCP2515 datasheet (overview sections)
+- NEMO `Documentation/README.md`, `Getting_Started.md` and `Operations_Guide.md`
+- NEMO `Documentation/NMEA2000.md`
+- Teensy 4.0 pinout reference (PJRC)
 
-## Why Build Our Own?
-
-### Commercial NMEA 2000 Tools
+## Why a Purpose-Built Platform?
 
 | Tool | Price | Capability |
 |------|-------|------------|
-| Actisense NGT-1 | $300+ | Read/Write, well supported |
-| Yacht Devices YDNU-02 | $200+ | WiFi gateway |
-| Maretron USB100 | $400+ | Professional diagnostics |
-| Simrad/Lowrance adapters | $150+ | Brand-specific |
-
-### OpenBridge
-
-| Component | Price |
-|-----------|-------|
-| Teensy 4.0 | ~$25 |
-| MCP2515 module | ~$5 |
-| TJA1050 (often included) | ~$3 |
-| Breadboard + wires | ~$10 |
-| **Total** | **~$43** |
-
-**Same read/write capability at 1/10th the cost!**
-
-<!--
-Instructor Notes:
-
-Emphasize the cost barrier for education:
-- A classroom of 20 students with commercial tools = $6000+
-- A classroom with OpenBridge = $860
-- Makes hands-on OT security education accessible
-
-Also: We have full control of the firmware (open source).
-Commercial tools are black boxes.
--->
-
-## System Architecture
-
-```
-┌─────────────────┐     SPI      ┌─────────────┐   CAN    ┌──────────────┐
-│                 │◄────────────►│             │◄────────►│              │
-│   Teensy 4.x    │              │   MCP2515   │          │  TJA1050     │
-│   (MCU)         │              │   (CAN      │          │  (Trans-     │
-│                 │              │   Controller)│          │   ceiver)    │
-│   - USB Serial  │              │             │          │              │
-│   - 600MHz ARM  │              │   - TX/RX   │          │   - CAN_H    │
-│   - OpenBridge  │              │   - Filters │          │   - CAN_L    │
-│     Firmware    │              │   - Buffers │          │              │
-└─────────────────┘              └─────────────┘          └──────┬───────┘
-                                                                 │
-                                                          ═══════╧═══════
-                                                          NMEA 2000 Bus
-```
-
-<!--
-Instructor Notes:
-
-Draw this diagram on board and explain data flow:
-
-1. CSV command comes in USB serial from computer
-2. Teensy parses command, builds CAN frame
-3. Teensy sends frame to MCP2515 via SPI
-4. MCP2515 handles CAN protocol (arbitration, CRC, ACK)
-5. TJA1050 converts to differential CAN signals
-6. Message appears on NMEA 2000 bus
-
-Reverse path for receiving messages.
--->
-
-## Component Deep Dive
-
-### Teensy 4.0/4.1
-
-- **Processor**: ARM Cortex-M7 @ 600 MHz
-- **Memory**: 1MB Flash, 512KB RAM
-- **USB**: Native USB with serial support
-- **GPIO**: Multiple SPI interfaces
-- **Why Teensy?**: Arduino-compatible, fast, affordable
-
-Teensy 4.1 pinout: see the official PJRC card at https://www.pjrc.com/store/teensy41.html (pinout diagram, CC BY-SA PJRC).
-
-<!--
-Image source: PJRC.com (Creative Commons)
-Alternative: Create simple pinout diagram showing only SPI pins used
--->
-
-### MCP2515 CAN Controller
-
-- **Interface**: SPI (up to 10 MHz)
-- **CAN**: ISO 11898-1 compliant
-- **Buffers**: 2 receive, 3 transmit
-- **Filters**: 6 acceptance filters, 2 masks
-- **Oscillator**: External 8/16 MHz crystal
-
-**Key pins:**
-- VCC, GND: Power (5V or 3.3V)
-- SCK, MOSI, MISO, CS: SPI interface
-- INT: Interrupt output
-- TXCAN, RXCAN: To transceiver
-
-### TJA1050 CAN Transceiver
-
-- **Function**: Converts logic to differential CAN
-- **Output**: CAN_H, CAN_L
-- **Protection**: ESD, short circuit
-- **Speed**: Up to 1 Mbps
-
-**Most MCP2515 modules include a TJA1050!**
-
-<!--
-Instructor Notes:
-
-Show physical modules to class:
-- MCP2515 module (blue PCB, typically)
-- Point out the TJA1050 chip on board
-- Show the crystal (8 or 16 MHz - check yours!)
-
-Common issue: Crystal frequency mismatch
-- Module has 8 MHz crystal
-- Code configured for 16 MHz
-- Result: Wrong bitrate!
--->
-
-## Bill of Materials
-
-| Qty | Component | Notes | Source |
-|-----|-----------|-------|--------|
-| 1 | Teensy 4.0 or 4.1 | 4.1 has more pins | PJRC.com |
-| 1 | MCP2515 CAN Module | Usually includes TJA1050 | Amazon/AliExpress |
-| 1 | Breadboard | 400 or 830 point | Amazon |
-| 10+ | Jumper wires | Male-to-male | Amazon |
-| 1 | USB Micro cable | For Teensy 4.0 | Any |
-| 2 | 120Ω resistors | Termination (optional) | Any |
-
-### Optional
-
-| Qty | Component | Notes |
-|-----|-----------|-------|
-| 1 | NMEA 2000 cable | For real network connection |
-| 1 | DeviceNet connector | Standard NMEA 2000 |
-| 1 | Logic analyzer | For debugging |
-
-## Wiring Diagram
+| Actisense NGT-1 | $300+ | Read/write gateway, well supported |
+| Yacht Devices YDNU-02 | $200+ | Wi-Fi gateway |
+| NEMO | about $50 in parts | Simulates sensors, shows live traffic, runs two built-in demonstrations; open hardware and firmware |
 
-```
-Teensy 4.x                    MCP2515 Module
-──────────                    ──────────────
-   3.3V  ◄──────────────────►  VCC
-   GND   ◄──────────────────►  GND
-   Pin 10 ◄─────────────────►  CS (Chip Select)
-   Pin 11 ◄─────────────────►  MOSI (SI)
-   Pin 12 ◄─────────────────►  MISO (SO)
-   Pin 13 ◄─────────────────►  SCK (Clock)
-   Pin 2  ◄─────────────────►  INT (Interrupt)
+Commercial tools are built to connect equipment, not to teach. NEMO lets every
+student own a device that behaves like a sensor on an NMEA 2000 network.
 
+## What NEMO Does
 
-MCP2515 Module                NMEA 2000 Bus
-──────────────                ────────────
-   CAN_H  ◄──────────────────►  CAN_H (White)
-   CAN_L  ◄──────────────────►  CAN_L (Blue)
-   GND    ◄──────────────────►  Shield/GND (optional)
-```
+1. **Simulates up to three sensors** (heading, depth, wind, engine RPM, speed, temperature and others); each value follows a potentiometer.
+2. **Shows live data**: discovers devices from ISO Address Claims and displays their parsed PGNs.
+3. **Runs two built-in demonstrations** on an isolated test network: a denial-of-service load and impersonation of a sensor's data.
 
-<!--
-Instructor Notes:
+NEMO has no serial capture mode. To record traffic for analysis, use a separate
+capture interface (see Lab 05).
 
-CRITICAL: Verify voltage compatibility!
-- Teensy 4.x is 3.3V logic
-- Some MCP2515 modules are 5V
-- Most work with 3.3V - check module specs
+## Hardware
 
-Wire color convention for NMEA 2000:
-- White: CAN_H (Net-H)
-- Blue: CAN_L (Net-L)
-- Bare/Shield: Ground
-- Red: +12V (we don't need for our module)
-- Black: Ground
--->
+NEMO is a Teensy 4.0 shield that adds:
 
-## Assembly Steps
+- Two CAN interfaces: CAN1 transmits (sensor simulation and demonstrations), CAN2 monitors
+- An OLED display (SH1106) and four navigation buttons
+- Three 10 k potentiometers for sensor values
+- An NMEA 2000 connector
 
-### Step 1: Prepare Components
+| Teensy pin | Function |
+|-----|----------|
+| 22 / 23 | CAN1 TX / RX (transmit side) |
+| 0 / 1 | CAN2 TX / RX (monitor side) |
+| 2, 3, 4, 5 | Buttons (left, down, right, up) |
+| 14, 15, 16 | Potentiometers 3, 2, 1 |
+| 18 / 19 | I2C SDA / SCL to display |
 
-1. Unpack Teensy (do NOT plug in USB yet)
-2. Unpack MCP2515 module
-3. Gather 7 jumper wires
-4. Have breadboard ready
+Each CAN interface needs a TJA1050 transceiver powered at **5 V**.
 
-### Step 2: Mount Components on Breadboard
+### Bill of Materials (about $50)
 
-1. Insert Teensy across center gap
-2. Insert MCP2515 module with space between
-3. Ensure all pins are seated properly
+| Part | Notes |
+|------|-------|
+| Teensy 4.0 | SparkFun DEV-15583 |
+| SH1106 128x64 I2C OLED | Not SSD1306 |
+| 2x TJA1050 CAN transceiver | 5 V |
+| 3x 10 k potentiometer | |
+| 4x push buttons | |
+| 3-position screw terminal | |
+| NMEA 2000 connector | |
+| Custom PCB (KiCad 9 files in the repo) or breadboard | |
 
-### Step 3: Wire Power
+## Build Options
 
-```
-Teensy 3.3V → MCP2515 VCC
-Teensy GND  → MCP2515 GND
-```
+- **PCB**: order the board from the files in `PCB/`, or request one through the project contact listed in the NEMO README.
+- **Breadboard**: wire the same parts following the schematic in the NEMO repository.
 
-**Double-check polarity before proceeding!**
+Either way, verify wiring against the schematic before applying power.
 
-### Step 4: Wire SPI Interface
+## Firmware
 
-```
-Teensy Pin 10 → MCP2515 CS
-Teensy Pin 11 → MCP2515 SI (MOSI)
-Teensy Pin 12 → MCP2515 SO (MISO)
-Teensy Pin 13 → MCP2515 SCK
-```
+NEMO firmware is built and uploaded with PlatformIO and Teensyduino:
 
-### Step 5: Wire Interrupt
+1. Install VS Code and the PlatformIO extension.
+2. Install Teensyduino (PJRC) for the Teensy Loader.
+3. Clone the NEMO repository and open the `SRC` folder (not the repository root).
+4. Build, then upload. If upload stalls, press the button on the Teensy.
 
-```
-Teensy Pin 2 → MCP2515 INT
-```
+After upload the OLED shows the main menu. If the display stays dark, check the
+I2C wiring and that the display is an SH1106.
 
-### Step 6: Verify Wiring
+## Using NEMO
 
-- Trace each wire from source to destination
-- Check for loose connections
-- Verify no shorts between adjacent pins
+Main menu: Sensor Readings (live data), Configure (sensors and device settings),
+Attacks, About. Navigate with the four buttons; set values with the potentiometers.
+The demonstrations in the Attacks menu are used only in Weeks 5-8, on an isolated
+network (see Class 05 and Class 07).
 
-<!--
-Instructor Notes:
+## Threat-Model Context
 
-BEFORE students power on:
-- Walk around and check each build
-- Common mistakes:
-  - Reversed power (will damage chips!)
-  - Wrong SPI pins
-  - Loose connections
-  - Teensy not seated properly
-
-Have spare components for failures.
--->
-
-## Software Setup
-
-### Install Arduino IDE
-
-1. Download from arduino.cc
-2. Install for your platform
-3. Open Arduino IDE
-
-### Install Teensyduino
-
-1. Download from pjrc.com/teensy/teensyduino.html
-2. Run installer
-3. Point to Arduino installation
-4. Select all libraries
-
-### Install Required Libraries
-
-In Arduino IDE: Sketch → Include Library → Manage Libraries
-
-Install:
-- **NMEA2000** by Timo Lappalainen
-- **NMEA2000_mcp** by Timo Lappalainen
-- **mcp_can** (for standalone MCP2515 use)
-
-<!--
-Instructor Notes:
-
-Timo Lappalainen's libraries are excellent:
-- Well documented
-- Active development
-- Used by many marine projects
-
-GitHub: https://github.com/ttlappalainen
-
-Alternative: We can provide pre-configured Arduino portable folder.
--->
-
-## OpenBridge Firmware
-
-### Clone Repository
-
-```bash
-git clone https://github.com/[org]/openbridge.git
-cd openbridge/src/VERSION\ 2/
-```
-
-### Configure Settings
-
-Edit `openbridge.h`:
-
-```cpp
-// CAN bus speed (NMEA 2000 = 250kbps)
-#define CAN_SPEED CAN_250KBPS
-
-// MCP2515 crystal frequency (check your module!)
-#define MCP_CLOCK MCP_16MHZ  // or MCP_8MHZ
-
-// Chip select pin
-#define MCP_CS_PIN 10
-
-// Interrupt pin
-#define MCP_INT_PIN 2
-```
-
-<!--
-Instructor Notes:
-
-IMPORTANT: Crystal frequency setting!
-
-To check your module's crystal:
-- Look at the small metal cylinder on the MCP2515 board
-- It will be marked "16.000" or "8.000"
-- 16.000 = 16 MHz
-- 8.000 = 8 MHz
-
-Wrong setting = CAN won't work at correct bitrate!
--->
-
-### Upload Firmware
-
-1. Connect Teensy via USB
-2. Select Board: Tools → Board → Teensy 4.0 (or 4.1)
-3. Select Port: Tools → Port → Teensy
-4. Click Upload (→ button)
-5. Press button on Teensy if prompted
-
-### Verify Upload
-
-Open Serial Monitor (Tools → Serial Monitor)
-Set baud rate: 115200
-
-You should see:
-```
-OpenBridge v2.0 initialized
-CAN interface ready
-Waiting for commands...
-```
-
-## Testing Your Build
-
-### Test 1: Loopback Test
-
-Connect CAN_H to CAN_L with a jumper (creates loopback)
-
-Send test message:
-```
-40,1,10.5,45.0,1
-```
-
-You should receive back:
-```
-TX: PGN 130306 Wind Data
-RX: PGN 130306 Wind Data
-```
-
-<!--
-Instructor Notes:
-
-Loopback test verifies:
-- Teensy is working
-- MCP2515 is communicating via SPI
-- CAN TX and RX paths work
-
-If this fails, check:
-- SPI wiring
-- Crystal frequency setting
-- Power connections
--->
-
-### Test 2: Connect to Test Network
-
-**Only with instructor supervision!**
-
-1. Connect to isolated test network
-2. Monitor traffic:
-   ```
-   # In serial monitor, send:
-   monitor
-   ```
-3. You should see NMEA 2000 messages scrolling
-
-### Test 3: Send a Message
-
-Send wind data to test network:
-```
-40,1,15.5,90.0,1
-```
-
-Verify on another monitor (OpenPlotter) that message appears.
-
-## Command Reference
-
-OpenBridge accepts CSV commands:
-
-| Command ID | PGN | Description |
-|------------|-----|-------------|
-| 2 | 127250 | Vessel Heading |
-| 4 | 129025 | Position Rapid Update |
-| 5 | 129026 | COG & SOG Rapid Update |
-| 40 | 130306 | Wind Data |
-| 50 | 127488 | Engine Parameters Rapid |
-
-### Example Commands
-
-```
-# Heading: 90 degrees magnetic
-2,1,1.5708,0.0,0.0,1
-
-# Position: 41.5°N, 71.4°W
-4,41.5,-71.4
-
-# Wind: 15 knots at 45 degrees apparent
-40,1,15.0,45.0,1
-
-# Engine: 2500 RPM
-50,1,2500
-```
-
-<!--
-Instructor Notes:
-
-See openbridge.h for full command list.
-
-Format: command_id,field1,field2,...
-
-Units:
-- Heading: radians
-- Position: decimal degrees
-- Wind speed: knots
-- Wind angle: degrees
-- RPM: revolutions per minute
--->
+NEMO is the course's traffic source and the instrument for the first two threat models.
+Simulated and impersonated sensors serve the *modified traffic* threat model (TM1).
+Because NEMO can transmit under another device's source address, it also stands in for
+the *substituted transmitter* threat model (TM2), which Week 12 examines at the
+physical layer.
 
 ## Safety Considerations
 
-### Electrical Safety
-
-- Always disconnect USB before modifying wiring
-- Check polarity before applying power
-- Don't exceed voltage ratings
-
-### Network Safety
-
-- **NEVER connect to live vessel systems without authorization**
-- All lab exercises use isolated test networks
-- Understand you are generating real CAN traffic
-
-### RF Considerations
-
-- Keep wires short to reduce EMI
-- Twisted pair for CAN_H/CAN_L recommended
-- Proper termination reduces reflections
-
-<!--
-Instructor Notes:
-
-CRITICAL safety briefing:
-1. This hardware can affect real vessel systems
-2. Spoofing navigation data is dangerous
-3. All exercises on isolated networks only
-4. Students sign ethics agreement
-
-Legal: Even possessing tools to attack CAN bus
-may have legal implications in some jurisdictions.
-We're using these for EDUCATIONAL purposes only.
--->
+- Electrical: USB power only; no vessel power on the bench.
+- Network: NEMO transmits. Use only an isolated test network. Never connect it to a live vessel.
+- Termination: 120 ohm at both ends of the bus; do not add a third.
+- Report any unexpected network behavior to the instructor and unplug.
 
 ## Troubleshooting
 
-| Symptom | Possible Cause | Solution |
-|---------|----------------|----------|
-| No serial output | Wrong COM port | Check Tools → Port |
-| "CAN init failed" | SPI wiring | Verify connections |
-| Wrong bitrate | Crystal mismatch | Check MCP_CLOCK setting |
-| TX but no RX | Missing termination | Add 120Ω resistor |
-| Garbage characters | Wrong baud rate | Set to 115200 |
-| Teensy not recognized | Driver issue | Install Teensyduino |
+| Symptom | Check |
+|---------|-------|
+| No Teensy detected | Charge-only USB cable; try another port; press the Teensy button |
+| Build fails | Delete the `.pio` folder; update PlatformIO |
+| Upload times out | Press the Teensy button; close other programs using the port |
+| Display garbled | SH1106 vs SSD1306; I2C address 0x3C or 0x3D; loose wires |
+| No devices in Live Data | Wiring, termination, and that other devices are transmitting |
 
 ## Lab Preview: Week 4
 
-In Lab 04, you will:
-
-1. Assemble your OpenBridge hardware
-2. Flash and configure firmware
-3. Verify operation with loopback test
-4. Connect to class test network
-5. Send and receive test messages
-6. Document your build with photos
-
-**Bring**: Soldering iron (if headers need soldering)
+You will build or receive a NEMO board, flash the firmware, and operate the sensor
+simulator and the live-data view on an isolated bench.
 
 ## Homework
 
-### Required
-
-1. **Order hardware** (if not provided by instructor)
-2. **Install** Arduino IDE and Teensyduino
-3. **Read** OpenBridge README
-4. **Watch** [Suggested] "SPI Explained" (YouTube)
-
-### Suggested
-
-- Review: Teensy pinout diagram
-- Explore: NMEA2000 library examples
-- Read: MCP2515 datasheet (functional description)
+1. Draw the block diagram of NEMO from the pin table: Teensy, two transceivers, display, buttons, potentiometers.
+2. Why does NEMO use two CAN interfaces? What would happen on a single interface if it both transmitted and monitored?
+3. Explain why NEMO's own display is not enough to analyze traffic.
 
 ## Discussion Questions
 
-1. Why use SPI instead of UART for the CAN controller?
-2. What happens if termination resistors are missing?
-3. How could an attacker use this hardware maliciously?
-4. Why is open-source hardware important for security research?
+1. What can a $50 board show students that a commercial gateway cannot?
+2. Which threat models can NEMO simulate, and which can it not?
+3. What are the risks of giving every student a device that can transmit on a network?
 
 ## References
 
-- [PJRC Teensy Documentation]
-- [MCP2515 Datasheet]
-- [NMEA2000 Library]
-- [OpenBridge GitHub]
-
-[PJRC Teensy Documentation]:https://www.pjrc.com/teensy/
-[MCP2515 Datasheet]:https://ww1.microchip.com/downloads/en/DeviceDoc/MCP2515-Stand-Alone-CAN-Controller-with-SPI-20001801J.pdf
-[NMEA2000 Library]:https://github.com/ttlappalainen/NMEA2000
-[OpenBridge GitHub]:https://github.com/[org]/openbridge
+- NEMO repository documentation (Getting Started, Operations Guide, PCB Design)
+- Teensy 4.0 and Teensyduino, PJRC
+- NMEA 2000 and CAN: see Classes 01 and 02
