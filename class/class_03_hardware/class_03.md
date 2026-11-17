@@ -118,7 +118,7 @@ Reverse path for receiving messages.
 - **GPIO**: Multiple SPI interfaces
 - **Why Teensy?**: Arduino-compatible, fast, affordable
 
-![Teensy 4.1 Pinout - CC BY-SA PJRC](../../images/teensy41_pinout.png)
+Teensy 4.1 pinout: see the official PJRC card at https://www.pjrc.com/store/teensy41.html (pinout diagram, CC BY-SA PJRC).
 
 <!--
 Image source: PJRC.com (Creative Commons)

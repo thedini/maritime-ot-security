@@ -19,6 +19,8 @@ description: |
 
 ## Lab Overview
 
+> **Setup:** this lab calls `parse_message(line)`. Use `datasets/capture_io.py` from the course repository (copy it next to your scripts), and the synthetic captures in `datasets/` (see `datasets/README.md`).
+
 **Duration**: 2 hours
 **Prerequisites**: Labs 09-12 completed, Class 13 material reviewed
 **Materials Required**:
@@ -566,81 +568,89 @@ Based on your comparison, which strategy is best for:
 ### 4.1 Run Complete Evaluation
 
 ```python
-def evaluate_ensemble(ensemble, normal_file, attack_file):
+def evaluate_ensemble(ensemble, normal_file, attack_file, labels_file):
     """
-    Comprehensive ensemble evaluation
-    """
-    # Process normal traffic
-    print("Processing normal traffic...")
-    ensemble.alerts = []
-    normal_count = 0
+    Evaluate the ensemble with time-based labels.
 
+    normal_file : capture with no attack (benign only)
+    attack_file : capture containing one attack window
+    labels_file : the matching *.labels.json (attack_start_s / attack_end_s,
+                  seconds from the first message in the file)
+
+    Reports false alerts per hour of benign traffic, whether the attack window
+    was detected and how long detection took. Message-level F1 is not used:
+    it depends on how much attack traffic the test file contains.
+    """
+    # Benign traffic: every alert is a false alert
+    ensemble.alerts = []
+    first_ts = last_ts = None
     with open(normal_file) as f:
         for line in f:
             msg = parse_message(line)
             if msg:
+                first_ts = msg['timestamp'] if first_ts is None else first_ts
+                last_ts = msg['timestamp']
                 ensemble.process_message(msg['can_id'], msg['data'], msg['timestamp'])
-                normal_count += 1
+    benign_hours = (last_ts - first_ts) / 3600.0
+    benign_alerts = len(ensemble.alerts)
 
-    normal_alerts = len(ensemble.alerts)
-
-    # Process attack traffic
-    print("Processing attack traffic...")
+    # Attack file: alerts inside the labeled window vs outside it
+    with open(labels_file) as f:
+        labels = json.load(f)
     ensemble.alerts = []
-    attack_count = 0
-
+    t0 = None
     with open(attack_file) as f:
         for line in f:
             msg = parse_message(line)
             if msg:
+                t0 = msg['timestamp'] if t0 is None else t0
                 ensemble.process_message(msg['can_id'], msg['data'], msg['timestamp'])
-                attack_count += 1
-
-    attack_alerts = len(ensemble.alerts)
-
-    # Calculate metrics
-    fpr = normal_alerts / normal_count if normal_count > 0 else 0
-    tpr = attack_alerts / attack_count if attack_count > 0 else 0
-
-    # Precision/recall (simplified - assumes all attack alerts are TP)
-    tp = attack_alerts
-    fp = normal_alerts
-    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-    recall = tpr
-    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+    start, end = labels['attack_start_s'], labels['attack_end_s']
+    in_window = [a for a in ensemble.alerts if start <= a['timestamp'] - t0 < end]
+    outside = len(ensemble.alerts) - len(in_window)
+    delay = (min(a['timestamp'] for a in in_window) - t0 - start) if in_window else None
 
     results = {
-        'normal_messages': normal_count,
-        'attack_messages': attack_count,
-        'normal_alerts': normal_alerts,
-        'attack_alerts': attack_alerts,
-        'false_positive_rate': fpr,
-        'true_positive_rate': tpr,
-        'precision': precision,
-        'recall': recall,
-        'f1_score': f1
+        'benign_hours': benign_hours,
+        'false_alerts_benign': benign_alerts,
+        'false_alerts_per_hour': benign_alerts / benign_hours if benign_hours else 0,
+        'attack_type': labels['attack'],
+        'attack_detected': bool(in_window),
+        'alerts_in_attack_window': len(in_window),
+        'alerts_outside_window': outside,
+        'detection_delay_s': delay,
     }
 
     print("\nEnsemble Evaluation Results:")
     print("=" * 50)
     for key, value in results.items():
         if isinstance(value, float):
-            print(f"{key:25s}: {value:.4f}")
+            print(f"{key:26s}: {value:.4f}")
         else:
-            print(f"{key:25s}: {value}")
-
+            print(f"{key:26s}: {value}")
+    print("\nThis evaluates one synthetic episode per attack type. It says "
+          "nothing about performance on a vessel.")
     return results
+```
+
+Run it once per attack file:
+
+```python
+for name in ['dos_attack', 'spoofing', 'smart_spoofing', 'replay']:
+    evaluate_ensemble(ensemble, 'normal_capture.txt',
+                      f'{name}_capture.txt', f'{name}_capture.labels.json')
 ```
 
 ### 4.2 Record Final Metrics
 
-| Metric | Value |
-|--------|-------|
-| False Positive Rate | |
-| True Positive Rate | |
-| Precision | |
-| Recall | |
-| F1 Score | |
+| Attack file | Detected? | Detection delay (s) | Alerts in window | Alerts outside window |
+|-------------|-----------|---------------------|------------------|-----------------------|
+| dos_attack_capture | | | | |
+| spoofing_capture | | | | |
+| smart_spoofing_capture | | | | |
+| replay_capture | | | | |
+
+False alerts per hour on `normal_capture.txt`: __________
 
 ### 4.3 Per-Detector Contribution
 

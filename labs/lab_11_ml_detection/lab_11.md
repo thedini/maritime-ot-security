@@ -19,6 +19,8 @@ description: |
 
 ## Lab Overview
 
+> **Setup:** this lab calls `parse_message(line)`. Use `datasets/capture_io.py` from the course repository (copy it next to your scripts), and the synthetic captures in `datasets/` (see `datasets/README.md`).
+
 **Duration**: 2 hours
 **Prerequisites**: Labs 09-10 completed, Class 11 material reviewed
 **Materials Required**:
@@ -321,9 +323,11 @@ svm_detector.save('svm_model.joblib')
 
 ```python
 # Test on held-out normal data
-from sklearn.model_selection import train_test_split
-
-X_train, X_test = train_test_split(X_normal, test_size=0.3, random_state=42)
+# Chronological split: train on the first 70%, test on the last 30%.
+# A random split would place windows that overlap the test windows in the
+# training set and make the false-positive rate look better than it is.
+cut = int(len(X_normal) * 0.7)
+X_train, X_test = X_normal[:cut], X_normal[cut:]
 
 # Retrain on training portion
 svm_detector = SVMDetector(kernel='rbf', nu=0.05)
@@ -368,15 +372,20 @@ print(f"Attack detection rate: {attack_detect_rate:.2%}")
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 
-# Combine normal and attack data with labels
-X_combined = np.vstack([X_normal, X_attack])
-y_combined = np.array([0] * len(X_normal) + [1] * len(X_attack))
+# Split each class chronologically (first 70% train, last 30% test).
+# Do NOT shuffle windows: neighboring windows overlap and share operating
+# conditions, so a random split puts near-copies of test windows in training
+# and overstates accuracy.
+def chrono_split(X, frac=0.7):
+    cut = int(len(X) * frac)
+    return X[:cut], X[cut:]
 
-# Shuffle and split
-from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(
-    X_combined, y_combined, test_size=0.3, random_state=42, stratify=y_combined
-)
+Xn_train, Xn_test = chrono_split(X_normal)
+Xa_train, Xa_test = chrono_split(X_attack)
+X_train = np.vstack([Xn_train, Xa_train])
+y_train = np.array([0] * len(Xn_train) + [1] * len(Xa_train))
+X_test = np.vstack([Xn_test, Xa_test])
+y_test = np.array([0] * len(Xn_test) + [1] * len(Xa_test))
 
 print(f"Training: {len(X_train)} samples")
 print(f"  Normal: {np.sum(y_train == 0)}")

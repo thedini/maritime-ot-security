@@ -273,11 +273,12 @@ See detailed `technology_requirements.md`, but key instructor considerations:
 **1. Install OpenPlotter on Raspberry Pi**
 
 ```bash
-# Download OpenPlotter image
-wget https://cloud.openmarine.net/s/xxx/download
+# Download the current OpenPlotter image for your Raspberry Pi model from the
+# official OpenPlotter documentation (https://openplotter.readthedocs.io) and
+# verify its checksum. Replace <image> below with the file you downloaded.
 
 # Flash to SD card (adjust device path!)
-sudo dd if=openplotter-xxx.img of=/dev/sdX bs=4M status=progress
+sudo dd if=<image>.img of=/dev/sdX bs=4M status=progress
 ```
 
 **2. Configure CAN Interface**

@@ -1,0 +1,8 @@
+{
+  "synthetic": true,
+  "seed": 20260117,
+  "attack": "replay",
+  "attack_start_s": 40,
+  "attack_end_s": 70,
+  "note": "heading frames from t=5..35 s retransmitted at t=40..70 s; real heading suppressed"
+}

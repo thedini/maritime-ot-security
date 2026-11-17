@@ -19,6 +19,8 @@ description: |
 
 ## Lab Overview
 
+> **Setup:** this lab calls `parse_message(line)`. Use `datasets/capture_io.py` from the course repository (copy it next to your scripts), and the synthetic captures in `datasets/` (see `datasets/README.md`).
+
 **Duration**: 2 hours
 **Prerequisites**: Labs 09-11 completed, Class 12 material reviewed
 **Materials Required**:
@@ -40,7 +42,7 @@ By the end of this lab, you will:
 
 ### 1.1 Understand Clock Skew
 
-Each device has a crystal oscillator with unique characteristics:
+Each device has a crystal oscillator whose characteristics differ slightly between devices:
 - Nominal frequency: 16.000 MHz (or 8.000 MHz)
 - Actual frequency: 16.000800 MHz (example)
 - Skew: +50 ppm (parts per million)

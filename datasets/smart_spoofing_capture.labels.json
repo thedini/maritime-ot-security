@@ -1,0 +1,8 @@
+{
+  "synthetic": true,
+  "seed": 20260117,
+  "attack": "smart_spoof",
+  "attack_start_s": 40,
+  "attack_end_s": 70,
+  "note": "victim wind frames removed; false values sent at the same ID and rate. Frequency-based detectors cannot see this; content or source checks can."
+}

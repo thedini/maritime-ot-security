@@ -27,9 +27,9 @@ description: |
 
 ## Definitions
 
-- **Fingerprint** -- Unique characteristics identifying a device
+- **Fingerprint** -- Measurable characteristics that may help distinguish one device from another
 - **Clock Skew** -- Drift in device's internal clock relative to reference
-- **Behavioral Fingerprint** -- Pattern of messages/timing unique to device
+- **Behavioral Fingerprint** -- Pattern of messages or timing that may differ between devices
 - **Impersonation** -- Attacker pretending to be legitimate device
 - **Spoofing** -- Sending messages with false source address
 
@@ -50,28 +50,40 @@ CAN bus has no authentication:
 
 ### The Solution
 
-Every physical device has unique characteristics:
+Physical devices show measurable differences that may help tell them apart:
 - Clock frequency drift
 - Message timing patterns
 - Voltage characteristics
 - Behavioral sequences
 
-**Even if attacker spoofs Source Address, they can't spoof physics!**
+**An attacker who spoofs a Source Address does not automatically reproduce these
+differences. Whether a measurement actually separates two transmitters depends on
+the bench, the message content, the wiring, and the enrollment data. Test it;
+do not assume it.**
+
+This class addresses the *substituted transmitter* threat model: an adversary
+attaches a different transmitter and claims an enrolled source address. It does
+not address a genuine device that reports false values, because that device's
+physical fingerprint is unchanged.
 
 <!--
 Instructor Notes:
 
-This is one of the most powerful detection techniques.
-It works because:
-1. Every crystal oscillator is slightly different
+This is a promising detection technique, with limits students should
+discover rather than be told away.
+It can work because:
+1. Crystal oscillators differ slightly
 2. Processing delays are hardware-specific
 3. Analog characteristics vary
 
-No software changes can make one device
-perfectly mimic another's physical timing.
+But two devices can also overlap, a device's timing drifts with temperature and
+age, and a classifier may learn message content or wiring instead of the
+device. Published and bench results separate devices under stated conditions;
+they are not proof of identity. Keep the claim at "distinguished these devices
+in this test", and ask what a test would need to show more.
 
-Analogy: Like voice recognition - you can
-imitate what someone says, but not exactly how.
+Analogy: voice recognition works until the speaker has a cold, the
+microphone changes, or someone practices the imitation.
 -->
 
 ## Clock Skew Fundamentals
@@ -90,18 +102,22 @@ Example:
 - Actual: 16.000800 MHz
 - Skew: +50 ppm (50 parts per million)
 
-### Why Skew is Unique
+### Why Skew Can Differ
 
-Manufacturing variations cause:
+Manufacturing variations can cause:
 - Crystal cut angle differences
 - Temperature sensitivity differences
 - Aging characteristics
 
-Two devices from same batch may have:
+Two devices from the same batch might have, for example (illustrative values):
 - Device A: +23 ppm
 - Device B: -17 ppm
 
-**Measurable and consistent over time!**
+Whether the difference is large enough to use depends on how stable it is.
+Skew moves with temperature and supply voltage, can change between power-ups
+and sessions, and two devices can overlap. Before relying on it, measure it
+repeatedly: different days, warm and cold starts, and with a different
+wiring or load.
 
 ### Measuring Clock Skew
 
@@ -199,7 +215,7 @@ Short-term jitter averages out over time.
 
 ### Fingerprint Components
 
-| Component | Measurement | Uniqueness |
+| Component | Measurement | Expected discriminating power (to be tested) |
 |-----------|-------------|------------|
 | Clock skew | ppm from expected | High |
 | Interval mean | Average message period | Medium |
@@ -349,7 +365,7 @@ class FingerprintDatabase:
 Instructor Notes:
 
 Fingerprint matching considerations:
-1. Clock skew is most reliable (highest weight)
+1. Clock skew is given the highest weight here; treat that as a hypothesis to test
 2. Interval mean/std add confidence
 3. PGN set is weak (easily spoofed)
 
@@ -519,7 +535,28 @@ class VoltageFingerprint:
 | Environment | Voltage varies with temperature |
 | Distance | Signal degrades over cable length |
 
-**Voltage fingerprinting is powerful but requires specialized hardware.**
+**Voltage fingerprinting requires specialized hardware.**
+
+### What a Fingerprinting Result Does and Does Not Show
+
+Class-level difference is not device identity. A classifier can separate two
+devices because they are different models or have different firmware, because
+they send different message content, or because of wiring and loading, rather
+than because of the transmitter hardware. A sound test:
+
+- Holds out whole capture sessions or blocks, not random frames from the same
+  recording (frames in one recording are not independent).
+- Uses controls: the same message content from both devices, same-family
+  devices, and a changed wiring or probe position.
+- Excludes identifiers and payload from the features, or shows they do not
+  drive the result.
+- Reports failures and what was not tested, such as other days, temperatures
+  and vessels.
+
+A device that answers a request is not thereby fingerprinted. Active methods
+(sending a request and measuring the response) need a documented stimulus every
+tested device supports; where a device does not answer, report it as
+unsupported rather than forcing a result.
 
 ## Behavioral Fingerprinting
 
@@ -732,7 +769,7 @@ In Lab 12, you will:
 
 ## Discussion Questions
 
-1. Why can't an attacker perfectly mimic another device's clock skew?
+1. What would an attacker need to do to imitate another device's clock skew, and what evidence would show whether it worked?
 2. How should fingerprints be updated over time?
 3. What happens when a device is replaced with identical model?
 4. Could a sophisticated attacker defeat fingerprinting?

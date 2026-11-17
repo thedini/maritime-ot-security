@@ -20,7 +20,11 @@ maritime-ot-security/
 │   ├── lab_01_network_recon/
 │   ├── lab_02_can_decode/
 │   └── ...
-├── images/                   # Diagrams and figures
+├── datasets/                 # Synthetic captures + generator (see datasets/README.md)
+├── assessments/              # Quizzes
+├── capstone/                 # Four-phase team project
+├── case_studies/             # Maritime incident case studies
+├── docs/                     # Instructor guide, prerequisites, technology requirements
 ├── templates/                # Build templates
 ├── syllabus.md              # Course syllabus
 ├── build.py                 # Build script for PDF/HTML

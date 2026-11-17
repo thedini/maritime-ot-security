@@ -55,8 +55,14 @@ description: |
 ### Ensemble Benefits
 
 1. **Complementary strengths**: Cover each other's weaknesses
-2. **Reduced false positives**: Multiple confirmation required
-3. **Reduced false negatives**: Multiple detection chances
+2. **Fewer false positives (if configured that way)**: requiring several detectors to agree can reduce them
+3. **More chances to detect**: several detectors can cover different behaviors
+
+An ensemble's benefit is a claim to measure, not assume. Requiring agreement
+lowers false alerts but can miss an attack only one detector sees; accepting any
+single alert does the opposite. Compare the ensemble with its best single
+detector, on benign traffic first (false alerts per hour), and note that F1 and
+precision change with how much attack traffic the test file contains.
 4. **Robustness**: Harder for attacker to evade all methods
 5. **Confidence**: Agreement increases trust in alerts
 

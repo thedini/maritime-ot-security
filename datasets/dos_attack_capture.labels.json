@@ -1,0 +1,8 @@
+{
+  "synthetic": true,
+  "seed": 20260117,
+  "attack": "dos_flood",
+  "attack_start_s": 40,
+  "attack_end_s": 70,
+  "note": "500 frames/s, id 0x00000000"
+}

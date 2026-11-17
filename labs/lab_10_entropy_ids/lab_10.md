@@ -19,6 +19,8 @@ description: |
 
 ## Lab Overview
 
+> **Setup:** this lab calls `parse_message(line)`. Use `datasets/capture_io.py` from the course repository (copy it next to your scripts), and the synthetic captures in `datasets/` (see `datasets/README.md`).
+
 **Duration**: 2 hours
 **Prerequisites**: Labs 05, 09 completed, Class 10 material reviewed
 **Materials Required**:

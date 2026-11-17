@@ -36,6 +36,22 @@ Instructor Notes:
 
 This course introduces students to the fundamentals of maritime operational technology (OT) security. Building on networking fundamentals, students explore CAN bus and NMEA 2000 protocols, analyze vessel network traffic, implement attack scenarios in a controlled environment, and develop anomaly detection systems. The course emphasizes hands-on learning using low-cost hardware (~$50) and open-source software.
 
+## Threat Models
+
+The course is organized around three threat models. A threat model states what an
+adversary can do, where the adversary has access, and what evidence could reveal
+the behavior. It is a set of assumptions, not a test.
+
+| | Adversary | Course coverage |
+|---|---|---|
+| **TM1: modified traffic** | Injects, replays, suppresses, or floods messages on the bus | Weeks 5-9 (spoofing, DoS, replay) and weeks 9-11, 13 (frequency, entropy, ML, ensemble detection) |
+| **TM2: substituted transmitter** | Attaches a different transmitter and claims an enrolled source address | Week 12 (fingerprinting) |
+| **TM3: genuine device, false values** | A legitimate device reports a false value, such as heading | Weeks 5-6 (navigation spoofing) and week 13 (independent reference as a discussion topic) |
+
+Success against one threat model does not establish protection against the others.
+Students are asked in each lab which threat model a method addresses and which it
+cannot.
+
 ## Prerequisites
 
 - Networking fundamentals (TCP/IP, OSI model)
@@ -51,11 +67,11 @@ Upon completion, students will be able to:
 2. Decode and construct NMEA 2000 Parameter Group Number (PGN) messages
 3. Build and program a Teensy-based CAN interface for under $50
 4. Perform reconnaissance on maritime CAN networks
-5. Execute and detect spoofing, replay, and denial-of-service attacks
+5. Execute and detect spoofing, replay, and denial-of-service scenarios in a controlled environment, and state which threat model each detector addresses
 6. Implement frequency-based and entropy-based anomaly detection
 7. Apply machine learning techniques (SVM, LSTM) to intrusion detection
-8. Analyze clock skew for device fingerprinting
-9. Evaluate IDS performance using standard metrics (TPR, FPR, F1, AUC)
+8. Analyze clock skew for device fingerprinting and explain why a class-level difference is not proof of device identity
+9. Evaluate IDS performance using standard metrics (TPR, FPR, F1, AUC), report false alerts per hour on benign traffic, and explain why the results depend on how much attack traffic the test contains
 10. Design defense-in-depth architectures for vessel networks
 
 ## NICE Framework Alignment
@@ -179,10 +195,10 @@ Class attendance is expected. Labs require presence for equipment access. If you
 
 ## Resources
 
-- Course GitHub Repository: [Link to be provided]
-- OpenBridge Project: github.com/[org]/openbridge
-- NMEA 2000 PGN Reference: [Link to be provided]
-- Discussion: [Platform TBD - Slack/Discord/Teams]
+- Course GitHub Repository: https://github.com/thedini/maritime-ot-security
+- OpenBridge Project: https://github.com/thedini/openBridge
+- NMEA 2000 PGN Reference: https://github.com/canboat/canboat (PGN database)
+- Discussion: set by the instructor for each offering (LMS forum, Slack, Discord, or Teams)
 
 ## Equality and Inclusion
 

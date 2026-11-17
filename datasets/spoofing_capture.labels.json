@@ -1,0 +1,8 @@
+{
+  "synthetic": true,
+  "seed": 20260117,
+  "attack": "naive_spoof",
+  "attack_start_s": 40,
+  "attack_end_s": 70,
+  "note": "false wind speed 25 m/s at 20 Hz in addition to the real sensor (rate doubles+)"
+}

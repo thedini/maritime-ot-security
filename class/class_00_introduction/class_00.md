@@ -40,8 +40,6 @@ description: |
 - Attacks can result in loss of life, environmental disasters, economic damage
 - Legacy systems + modern connectivity = expanded attack surface
 
-![Maritime Trade Routes](../../images/maritime_trade.png)
-
 <!--
 Instructor Notes:
 
@@ -197,8 +195,6 @@ Provide links to freely available guidance documents for student reading.
 
 ## Defense in Depth for Maritime
 
-![Defense in Depth](../../images/defense_in_depth.png)
-
 **Layers** (from outside in):
 1. Perimeter: Satellite/shore connections
 2. Network: Segmentation, firewalls
@@ -228,8 +224,6 @@ Low-cost NMEA 2000 simulation and testing platform:
 - **Software**: Open-source Arduino libraries
 - **Capability**: Send/receive 49 PGN types
 - **Purpose**: Education, research, testing
-
-![OpenBridge Hardware](../../images/openbridge_hardware.jpg)
 
 **We will build this in Week 4!**
 

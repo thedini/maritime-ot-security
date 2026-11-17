@@ -74,8 +74,6 @@ Expected: Internet connectivity, wireless, autonomous features
 
 ### Differential Signaling
 
-![CAN Physical Layer](../../images/can_physical.png)
-
 - Two wires: CAN_H and CAN_L
 - Differential voltage:
   - Dominant (0): CAN_H=3.5V, CAN_L=1.5V (diff=2V)
@@ -158,8 +156,6 @@ Quiz question: "How many data bytes can a standard CAN frame carry?" (8)
 ## Arbitration: How CAN Handles Collisions
 
 Key insight: **Lower ID = Higher Priority**
-
-![CAN Arbitration](../../images/can_arbitration.png)
 
 1. All nodes can transmit simultaneously
 2. Each node monitors the bus while transmitting
@@ -297,8 +293,6 @@ A sophisticated DoS technique:
 4. Victim node isolates itself from network
 
 **Impact**: Can disable specific safety systems!
-
-![Bus-Off Attack](../../images/bus_off_attack.png)
 
 <!--
 Instructor Notes:

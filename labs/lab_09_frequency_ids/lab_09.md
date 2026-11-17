@@ -162,10 +162,22 @@ class FrequencyDetector:
         # Get baseline stats
         stats = self.baseline.get_stats(pgn, sa)
 
-        # Skip if no baseline
+        # No baseline for this (PGN, source): a device or message type never
+        # seen during enrollment. Alert, otherwise a flood from an unseen ID
+        # is invisible to a rate detector.
         if stats is None:
-            self.last_seen[key] = timestamp
-            return False, None
+            alert = {
+                'type': 'UNKNOWN_SOURCE',
+                'pgn': pgn,
+                'source_addr': sa,
+                'timestamp': timestamp,
+                'interval': None,
+                'expected_interval': None,
+                'deviation_sigma': None,
+                'severity': 'HIGH'
+            }
+            self.alerts.append(alert)
+            return True, alert
 
         # Skip first message (no interval yet)
         if key not in self.last_seen:
@@ -290,9 +302,11 @@ def run_detector(capture_file, baseline_file, threshold_sigma=3):
             # Process
             is_anomaly, alert = detector.process_message(can_id, timestamp)
 
-            if is_anomaly:
+            if is_anomaly and len(detector.alerts) <= 20:   # print the first 20 only
+                dev = alert['deviation_sigma']
+                dev_text = f"{dev:.1f}σ" if dev is not None else "no baseline"
                 print(f"ALERT: {alert['type']} - PGN {alert['pgn']} SA {alert['source_addr']} "
-                      f"(deviation: {alert['deviation_sigma']:.1f}σ)")
+                      f"(deviation: {dev_text})")
 
     # Print summary
     stats = detector.get_statistics()
