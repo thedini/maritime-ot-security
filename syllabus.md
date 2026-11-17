@@ -12,14 +12,14 @@ book: true
 classoption: oneside
 code-block-font-size: \scriptsize
 description: |
-    OpenBridge: Maritime Operational Technology Security
+    Maritime Operational Technology Security on the NEMO platform
 ---
 
 # Syllabus
 
 ## Welcome
 
-Welcome to Maritime OT Security! This course provides hands-on experience securing operational technology systems in the maritime domain. We'll explore the unique challenges of protecting vessel control networks using the open-source OpenBridge platform.
+Welcome to Maritime OT Security! This course provides hands-on experience securing operational technology systems in the maritime domain. We'll explore the unique challenges of protecting vessel control networks using NEMO, an open-source NMEA 2000 education and research platform designed by James Campbell (versions 1.0.0 and 1.0.1).
 
 ## Instructor
 
@@ -89,11 +89,11 @@ Upon completion, students will be able to:
 
 | Item | Approximate Cost | Source |
 |------|------------------|--------|
-| Teensy 4.0 or 4.1 | $25 | PJRC.com |
-| MCP2515 CAN Module | $5 | Amazon/AliExpress |
-| TJA1050 Transceiver | $3 | Amazon/AliExpress |
-| Breadboard + Jumper Wires | $10 | Amazon |
-| **Total** | **~$43** | |
+| NEMO board (PCB, or parts for a breadboard build) | about $50 total | See NEMO `Documentation/PCB_Design.md` for the parts list and board request |
+| Teensy 4.0, SH1106 OLED, 2x TJA1050, 3 potentiometers, 4 buttons, NMEA 2000 connector | (included above) | SparkFun, Amazon, RS |
+| Micro USB data cable | $5 | Amazon |
+| Listen-only CAN capture interface (Raspberry Pi + CAN HAT, or USB-CAN adapter) | shared per bench | Instructor |
+| **Total per student** | **about $55** | |
 
 <!--
 Instructor Notes:
@@ -105,11 +105,11 @@ Instructor Notes:
 
 ### Software (all open-source)
 
-- Arduino IDE with Teensyduino add-on
+- VS Code with PlatformIO, and Teensyduino
 - Python 3.x with: numpy, pandas, scikit-learn, pytorch, matplotlib
 - can-utils package (Linux)
 - Wireshark with CAN dissector
-- OpenBridge firmware (provided)
+- NEMO firmware (https://github.com/thedini/NEMO)
 
 ### Lab Infrastructure
 
@@ -138,7 +138,7 @@ Instructor Notes:
 | 1 | Introduction to Maritime Cybersecurity | Network Reconnaissance |
 | 2 | CAN Bus Protocol Deep Dive | CAN Frame Decoding |
 | 3 | NMEA 2000 and PGN Structure | PGN Parser Development |
-| 4 | OpenBridge Hardware Build | Hardware Assembly |
+| 4 | The NEMO Platform | Build and Test a NEMO Board |
 | 5 | Reconnaissance Techniques | Network Profiling |
 | 6 | Navigation Spoofing Attacks | GPS/Heading Spoofing |
 | 7 | Engine System Attacks | Engine Data Spoofing |
@@ -196,7 +196,7 @@ Class attendance is expected. Labs require presence for equipment access. If you
 ## Resources
 
 - Course GitHub Repository: https://github.com/thedini/maritime-ot-security
-- OpenBridge Project: https://github.com/thedini/openBridge
+- NEMO Project: https://github.com/thedini/NEMO
 - NMEA 2000 PGN Reference: https://github.com/canboat/canboat (PGN database)
 - Discussion: set by the instructor for each offering (LMS forum, Slack, Discord, or Teams)
 

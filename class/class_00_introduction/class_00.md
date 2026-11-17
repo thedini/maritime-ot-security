@@ -216,14 +216,15 @@ Why detection?
 - Enable response and recovery
 -->
 
-## OpenBridge: Our Platform
+## NEMO: Our Platform
 
-Low-cost NMEA 2000 simulation and testing platform:
+NEMO (NMEA 2000 Education and Maritime Operations) is a low-cost, open
+NMEA 2000 education and research platform designed by James Campbell:
 
-- **Hardware**: Teensy 4.x + MCP2515 (~$43)
-- **Software**: Open-source Arduino libraries
-- **Capability**: Send/receive 49 PGN types
-- **Purpose**: Education, research, testing
+- **Hardware**: Teensy 4.0 board with two CAN interfaces, OLED display, buttons and potentiometers (about $50)
+- **Firmware**: Open source, built with PlatformIO
+- **Capability**: Simulates up to three sensors, shows live network data, and runs two built-in demonstrations
+- **Purpose**: Education, research, testing (versions 1.0.0 and 1.0.1)
 
 **We will build this in Week 4!**
 
@@ -231,9 +232,9 @@ Low-cost NMEA 2000 simulation and testing platform:
 Instructor Notes:
 
 Show the hardware components:
-- Teensy microcontroller
-- MCP2515 CAN controller
-- TJA1050 transceiver
+- Teensy 4.0 microcontroller
+- Two TJA1050 CAN transceivers
+- OLED display, buttons, potentiometers
 
 Emphasize:
 - Much cheaper than commercial NMEA 2000 tools ($1000+)
@@ -247,7 +248,7 @@ Have a completed unit to pass around if available.
 
 | Tool | Purpose |
 |------|---------|
-| OpenBridge | NMEA 2000 simulation |
+| NEMO | NMEA 2000 simulation and live view |
 | OpenPlotter | Real vessel data capture |
 | can-utils | CAN bus analysis (candump, cansend) |
 | Wireshark | Protocol analysis |
@@ -268,9 +269,9 @@ Have a completed unit to pass around if available.
 - [IMO Cyber Security Guidelines]
 - [NotPetya Maersk Case Study]
 - [IEC 61162 Overview]
-- [OpenBridge GitHub]
+- [NEMO GitHub]
 
 [IMO Cyber Security Guidelines]:https://www.imo.org/en/OurWork/Security/Pages/Cyber-security.aspx
 [NotPetya Maersk Case Study]:https://www.wired.com/story/notpetya-cyberattack-ukraine-russia-code-crashed-the-world/
 [IEC 61162 Overview]:https://www.nmea.org/nmea-2000.html
-[OpenBridge GitHub]:https://github.com/[org]/openbridge
+[NEMO GitHub]:https://github.com/thedini/NEMO

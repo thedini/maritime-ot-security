@@ -20,9 +20,9 @@ description: |
 ## Lab Overview
 
 **Duration**: 2 hours
-**Prerequisites**: Lab 04 completed, working OpenBridge hardware
+**Prerequisites**: Lab 04 completed, a working NEMO board
 **Materials Required**:
-- OpenBridge hardware (from Lab 04)
+- NEMO board (from Lab 04) and a listen-only CAN capture interface
 - Computer with Python 3.x
 - Access to test NMEA 2000 network
 
@@ -47,124 +47,51 @@ All activities are conducted on **isolated test networks only**.
 
 ## Part 1: Traffic Capture (30 minutes)
 
-### 1.1 Connect to Network
+NEMO displays live data but has no capture output, so recording uses a separate,
+**listen-only** capture interface: for example a Raspberry Pi with a CAN HAT or a USB-CAN
+adapter running SocketCAN (OpenPlotter works too). Your NEMO boards provide the traffic.
 
-1. Connect your OpenBridge to the test network
-2. Open Serial Monitor (115200 baud)
-3. Verify you see traffic with `monitor` command
+### 1.1 Set up the bench
 
-### 1.2 Configure Capture Script
-
-Create a Python script to capture traffic:
-
-```python
-#!/usr/bin/env python3
-"""
-network_capture.py - Capture NMEA 2000 traffic via OpenBridge
-"""
-import serial
-import time
-import argparse
-
-def capture_traffic(port, duration_sec, output_file):
-    """
-    Capture CAN traffic from OpenBridge
-
-    Args:
-        port: Serial port (e.g., '/dev/ttyACM0' or 'COM3')
-        duration_sec: Capture duration in seconds
-        output_file: Output filename
-    """
-    print(f"Opening {port}...")
-    ser = serial.Serial(port, 115200, timeout=1)
-    time.sleep(2)  # Wait for connection
-
-    # Enter monitor mode
-    ser.write(b'monitor\n')
-    time.sleep(0.5)
-
-    print(f"Capturing for {duration_sec} seconds...")
-    start_time = time.time()
-    messages = []
-
-    try:
-        while (time.time() - start_time) < duration_sec:
-            line = ser.readline().decode('utf-8', errors='ignore').strip()
-            if line and line.startswith('RX:'):
-                timestamp = time.time() - start_time
-                messages.append(f"{timestamp:.6f} {line}")
-
-                # Progress indicator
-                if len(messages) % 100 == 0:
-                    print(f"  Captured {len(messages)} messages...")
-
-    except KeyboardInterrupt:
-        print("\nCapture interrupted by user")
-
-    finally:
-        ser.close()
-
-    # Save to file
-    with open(output_file, 'w') as f:
-        f.write('\n'.join(messages))
-
-    print(f"Captured {len(messages)} messages to {output_file}")
-    return len(messages)
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Capture NMEA 2000 traffic')
-    parser.add_argument('-p', '--port', required=True, help='Serial port')
-    parser.add_argument('-d', '--duration', type=int, default=300,
-                        help='Capture duration in seconds (default: 300)')
-    parser.add_argument('-o', '--output', default='capture.txt',
-                        help='Output file (default: capture.txt)')
-
-    args = parser.parse_args()
-    capture_traffic(args.port, args.duration, args.output)
-```
-
-### 1.3 Execute Capture
-
-Run capture for 5 minutes (minimum):
+1. Build the test network: backbone with a 120 ohm terminator at each end, your NEMO boards and any available sensors as devices, and the capture interface as one more drop.
+2. Configure NEMO sensors (Lab 04, Part 4) so that at least three devices are active.
+3. Bring up the capture interface at 250 kbit/s **in listen-only mode** so that it cannot transmit:
 
 ```bash
-python network_capture.py -p /dev/ttyACM0 -d 300 -o lab05_capture.txt
+sudo ip link set can0 down
+sudo ip link set can0 type can bitrate 250000 listen-only on
+sudo ip link set can0 up
 ```
 
-**Record**: Number of messages captured: _____________
-
-### 1.4 Alternative: Direct candump
-
-If using OpenPlotter or SocketCAN:
+### 1.2 Record
 
 ```bash
-# Capture with timestamps
-candump -ta can0 > lab05_capture.txt &
+# Capture with timestamps for 5 minutes (10-15 minutes gives a better baseline)
+timeout 300 candump -ta can0 > lab05_capture.txt
 
-# Wait 5 minutes
-sleep 300
-
-# Stop capture
-pkill candump
-
-# Check message count
+# Check the message count
 wc -l lab05_capture.txt
 ```
+
+**Record**: number of messages captured: ____________
+
+The scripts in this course read lines containing a timestamp, a 29-bit identifier in
+hex, and the data bytes. `candump -ta` lines and the provided `datasets/` files both
+work with `datasets/capture_io.py`.
+
+### 1.3 No hardware available?
+
+Use `datasets/normal_capture.txt` (synthetic, 5 minutes) and copy it to `lab05_capture.txt`.
 
 <!--
 Instructor Notes:
 
 5 minutes is minimum for good frequency profiling.
-10-15 minutes is better for complete baseline.
+10-15 minutes is better for a complete baseline.
 
-Ensure test network has multiple active devices:
-- GPS/chartplotter
-- Wind sensor
-- Depth sounder
-- Engine (or simulator)
-
-If using OpenPlotter, students can also capture
-via candump for comparison.
+Ensure the test network has multiple active devices
+(for example three configured NEMO sensors).
+Confirm the capture interface is listen-only before students connect it.
 -->
 
 ## Part 2: Device Enumeration (30 minutes)

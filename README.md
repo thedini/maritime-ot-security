@@ -1,8 +1,8 @@
 # Maritime OT Security Course
 
-**OpenBridge: Maritime Operational Technology Security**
+**Maritime Operational Technology Security on the NEMO platform**
 
-A 14-week course teaching maritime cybersecurity using the open-source OpenBridge platform.
+A 14-week course teaching maritime cybersecurity using NEMO (NMEA 2000 Education and Maritime Operations), an open-source platform designed by James Campbell. NEMO versions 1.0.0 and 1.0.1 are supported.
 
 ## Overview
 
@@ -55,18 +55,17 @@ python build.py class/ output/ true
 
 | Component | Cost |
 |-----------|------|
-| Teensy 4.0/4.1 | $25 |
-| MCP2515 CAN Module | $5 |
-| TJA1050 Transceiver | $3 |
-| Breadboard + Wires | $10 |
-| **Total** | **~$43** |
+| NEMO board (Teensy 4.0, SH1106 OLED, 2x TJA1050, pots, buttons, connector) | about $50 |
+| Micro USB data cable | $5 |
+| Listen-only CAN capture interface (shared per bench) | instructor |
+| **Total per student** | **about $55** |
 
 ## Software Requirements
 
-- Arduino IDE with Teensyduino
+- VS Code with PlatformIO, and Teensyduino (for NEMO firmware)
 - Python 3.x (numpy, pandas, scikit-learn, pytorch)
 - can-utils (Linux)
-- OpenBridge firmware
+- NEMO firmware (https://github.com/thedini/NEMO)
 
 ## Learning Outcomes
 

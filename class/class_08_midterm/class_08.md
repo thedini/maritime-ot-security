@@ -33,7 +33,7 @@ This session consists of:
 - CAN bus protocol fundamentals
 - NMEA 2000 message structure
 - PGN encoding and decoding
-- Hardware architecture (OpenBridge)
+- Hardware architecture (NEMO)
 
 ### Module 2: Reconnaissance & Attacks (Weeks 4-7)
 

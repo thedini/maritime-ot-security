@@ -39,19 +39,24 @@ This document specifies all technology requirements for offering the Maritime OT
 
 ### Per-Student Hardware Kit
 
-Each student (or pair of students) needs the following components to build an OpenBridge CAN interface:
+Each student (or pair of students) builds or receives a NEMO board (versions 1.0.0 and 1.0.1). NEMO was designed by James Campbell; the parts list, schematic and board files are in the NEMO repository (`Documentation/PCB_Design.md`, `PCB/`). Part choices and prices change; confirm current prices with suppliers before ordering.
 
-| Component | Specification | Quantity | Unit Cost | Source | Total |
-|-----------|---------------|----------|-----------|--------|-------|
-| **Teensy 4.0 or 4.1** | ARM Cortex-M7 @ 600MHz, 1MB RAM | 1 | $23.80 | PJRC.com | $23.80 |
-| **MCP2515 CAN Module** | SPI-to-CAN controller with oscillator | 1 | $4.50 | Amazon/AliExpress | $4.50 |
-| **TJA1050 Transceiver** | CAN transceiver (usually included on MCP2515 board) | 1 | $0 | Included | $0 |
-| **Solderless Breadboard** | 400 or 830 tie-points | 1 | $3.50 | Amazon | $3.50 |
-| **Jumper Wire Kit** | Male-male, male-female, various lengths | 1 set | $5.00 | Amazon | $5.00 |
-| **USB Cable** | Micro-B (Teensy 4.0) or Micro-B/C (Teensy 4.1) | 1 | $3.00 | Amazon | $3.00 |
-| **CAN Cable** | 2-conductor twisted pair, 1-2 meters | 1 | $2.00 | DigiKey/Local | $2.00 |
-| **120Ω Resistors** | 1/4W termination resistors | 2 | $0.20 | DigiKey | $0.40 |
-| | | | **Per-student total** | | **$42.20** |
+| Component | Specification | Quantity | Source |
+|-----------|---------------|----------|--------|
+| **NEMO board** | PCB, or parts for a breadboard build (below) | 1 | Order PCB from repository files, or request through the NEMO project contact |
+| **Teensy 4.0** | NXP iMXRT1062, two FlexCAN controllers (SparkFun DEV-15583) | 1 | SparkFun / PJRC |
+| **SH1106 OLED** | 128x64 I2C, 1.3 inch (not SSD1306) | 1 | Amazon |
+| **TJA1050 CAN transceiver** | 5 V | 2 | Amazon |
+| **10 k potentiometer** | Sensor value control | 3 | Amazon |
+| **Push buttons** | Navigation | 4 | Amazon |
+| **Screw terminal** | 3-position | 1 | Amazon |
+| **NMEA 2000 connector** | See the NEMO parts list | 1 | RS Components |
+| **USB data cable** | Micro-B (Teensy 4.0) | 1 | Amazon |
+| **120 ohm terminators** | Two per bench bus | 2 per bench | DigiKey / local |
+
+The NEMO documentation puts a build at about $50 in parts.
+
+**Shared per bench**: a listen-only CAN capture interface (Raspberry Pi with a CAN HAT, or a USB-CAN adapter) running SocketCAN with `can-utils`. NEMO has no serial capture output.
 
 **Optional but recommended**:
 - **Soldering iron kit** ($15-25): If students solder headers on Teensy (more permanent)

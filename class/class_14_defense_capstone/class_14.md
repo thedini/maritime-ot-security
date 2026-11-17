@@ -635,7 +635,7 @@ Presentation (10 points):
 
 | Module | Topics | Skills Gained |
 |--------|--------|---------------|
-| 1 (Weeks 1-3) | CAN/NMEA 2000, Hardware | Protocol understanding, OpenBridge |
+| 1 (Weeks 1-3) | CAN/NMEA 2000, Hardware | Protocol understanding, NEMO |
 | 2 (Weeks 4-7) | Attacks | Recon, spoofing, DoS, replay |
 | 3 (Weeks 9-13) | Detection | Frequency, entropy, ML, fingerprinting |
 | Final | Integration | Ensemble IDS, XAI, defense arch |

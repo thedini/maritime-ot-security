@@ -114,11 +114,11 @@ Students construct understanding through:
 - **Deliverables**: Parser for position, heading, engine data
 - **Common issues**: Sign extension for negative values, unit conversions
 
-#### **Week 4: OpenBridge Hardware Build**
-- **Class**: Teensy architecture, MCP2515 configuration, SPI communication
-- **Lab 04**: Hardware assembly and firmware flashing
-- **Deliverables**: Working OpenBridge device with test traffic
-- **Common issues**: Wiring errors, SPI bus conflicts, termination resistors
+#### **Week 4: The NEMO Platform**
+- **Class**: NEMO hardware (Teensy 4.0, two CAN interfaces, display), firmware build with PlatformIO
+- **Lab 04**: Inspect, flash and operate a NEMO board (versions 1.0.0 and 1.0.1)
+- **Deliverables**: Working NEMO board; sensor simulation and live-data view demonstrated
+- **Common issues**: Charge-only USB cables, SH1106 vs SSD1306 display, I2C address, termination resistors
 - **NOTE**: Order hardware 4-6 weeks in advance!
 
 #### **Week 5: Reconnaissance Techniques**

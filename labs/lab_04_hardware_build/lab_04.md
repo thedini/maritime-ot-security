@@ -1,6 +1,6 @@
 ---
 title: "Lab 04"
-subtitle: "OpenBridge Hardware Assembly"
+subtitle: "Build and Test a NEMO Board"
 author: "Constantine Macris"
 date: "2026"
 titlepage: true
