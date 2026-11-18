@@ -260,21 +260,21 @@ I certify that I have completed this quiz independently without unauthorized ass
     ```
     CAN ID: 0x09F80205 = 0000 1001 1111 1000 0000 0010 0000 0101 (binary)
 
-    Priority (bits 26-28):    000 = 0 (actually bits shift to 010 = 2)
+    Priority (bits 26-28):    010 = 2
     Reserved (bit 25):        0
-    Data Page (bit 24):       0
+    Data Page (bit 24):       1
     PDU Format (bits 16-23):  11111000 = 0xF8 = 248
     PDU Specific (bits 8-15): 00000010 = 0x02 = 2
     Source Address (bits 0-7):00000101 = 0x05 = 5
 
     Since PF = 248 >= 240, this is PDU2 format (broadcast)
     PGN = (DP << 16) | (PF << 8) | PS
-    PGN = (0 << 16) | (248 << 8) | 2
-    PGN = 0 | 63488 | 2 = 63490 (0xF802)
+    PGN = (1 << 16) | (248 << 8) | 2
+    PGN = 65536 | 63488 | 2 = 129026 (0x1F802), COG & SOG Rapid Update
 
     Final answers:
     - Priority: 2 (high priority)
-    - PGN: 63490
+    - PGN: 129026
     - Source Address: 5
     ```
 

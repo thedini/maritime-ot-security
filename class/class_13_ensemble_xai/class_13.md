@@ -77,7 +77,9 @@ Just as we layer physical security:
 We layer detection methods:
 - Frequency + entropy + ML + fingerprinting
 
-An attack must evade ALL layers to succeed undetected.
+Layering gives an attacker more to evade, but an attack does not have to evade every
+layer: with voting or a weighted threshold, an attack can be flagged when only some
+detectors see it, and missed when too few do. Measure the combined result.
 -->
 
 ## Ensemble Architectures

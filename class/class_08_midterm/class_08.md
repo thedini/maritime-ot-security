@@ -427,7 +427,7 @@ Materials allowed:
 ## Office Hours
 
 Additional office hours available before midterm:
-- [Schedule to be announced]
+- Times are set by the instructor for each offering
 - Review sessions available upon request
 
 ## References

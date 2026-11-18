@@ -471,7 +471,7 @@ Instructor Notes:
 This is a powerful detection method because:
 1. Attacker can spoof any data content
 2. Attacker can spoof source address
-3. But attacker CANNOT spoof their hardware clock!
+3. An attacker would have to imitate the hardware clock behavior as well; that is harder than copying a source address, but its difficulty must be tested, not assumed
 
 Even professional attackers can't defeat this without:
 - Physical access to legitimate device
@@ -653,7 +653,7 @@ Behavioral fingerprinting:
 - But easier to spoof (if attacker studies patterns)
 
 Best approach: Combine multiple methods
-1. Clock skew (hard to spoof)
+1. Clock skew (harder to imitate than an address; not proof of identity)
 2. Voltage (very hard, needs hardware)
 3. Behavior (easy, adds confidence)
 

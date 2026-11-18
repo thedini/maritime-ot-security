@@ -1,32 +1,41 @@
 # Readiness for sharing (CLARK.center) — status 2026-11-17
 
-Prepared on branch `prep/clark-center-readiness`. Nothing has been pushed or submitted.
-CLARK.center's submission requirements could not be read (the site renders without
-static content); check them before submitting.
+Branch `prep/clark-center-readiness`. Nothing has been pushed or submitted.
+CLARK.center's submission requirements could not be read (the site serves no static
+content); check them before submitting.
 
-## Done in this branch
-- `datasets/`: deterministic synthetic captures (normal, extended, DoS, naive spoof,
-  smart spoof, replay) with ground-truth labels, a generator, and `capture_io.py`
-  (`parse_message`, called by labs 10-13 but previously undefined).
-  Verified: lab 5 enumeration and lab 9 detector run on them; naive spoof and DoS
-  are flagged, smart spoof and replay are not (intended teaching point).
-- Lab 9: detector alerts on an unseen (PGN, source) so a flood from a new ID is detected; prints the first 20 alerts.
-- Lab 11: chronological train/test split instead of random shuffling.
-- Lab 13: evaluation reports false alerts per hour, detection and delay per labeled
-  attack window; no message-level F1 with "all attack alerts are true positives".
-- Class 12 / lab 12: removed "unique", "can't spoof physics", "consistent over time";
-  added what a fingerprinting result does and does not show.
-- Class 13: ensemble benefits stated as claims to measure.
-- Syllabus: three threat models, updated objectives 5, 8, 9; resource links filled.
-- Removed placeholder download URLs, `[Link to be provided]`, `[Platform TBD]`; removed 7 broken image embeds.
+## Done
+- **Licence:** `LICENSE` holds the official CC BY-SA 4.0 text (README declares the same).
+- **Platform:** course moved to NEMO 1.0.0 / 1.0.1 (designed by James Campbell). Class 3, lab 4,
+  lab 5 capture (separate listen-only interface), README, syllabus, bill of materials,
+  technology requirements, instructor guide Week 4. Only 1.0.0 is identifiable in the
+  `thedini/NEMO` repo (PCB silkscreen, firmware); what 1.0.1 changes is not documented here.
+- **Data:** `datasets/` deterministic synthetic captures with labels, generator, and
+  `capture_io.py` (`parse_message`). Verified with lab 5 enumeration and lab 9 detector.
+- **Evaluation fixes:** lab 9 (unknown-source alert), lab 11 and class 11 (chronological split),
+  lab 13 (false alerts per hour and detection delay, no F1-with-all-alerts-as-TP).
+- **Honesty fixes:** class/lab 12 and class 13/14 overclaims removed; ensemble benefit stated as a claim to measure.
+- **Threat models:** syllabus table (TM1-TM3) and quiz questions use the framing.
+- **Figures:** `images/make_figures.py` draws CAN physical layer, CAN arbitration, defense in depth (embedded in classes 0 and 1).
+- **Assessments:** quizzes for classes 3-7 and 9-14 (class 1-2 existed), plus `class_08_midterm_key.md`.
+  Not proofread end to end by the author; they were checked for placeholders and spot-checked.
+- **Errors fixed:** class 2 / quiz 2 / lab 3 PGN decode (0x09F80205 is PGN 129026), class 10 entropy example
+  (1.46 bits), class 14 `alert_history` bug, placeholders in class 8/14, lab 14, syllabus.
 
-## Still open (needs author)
-1. **Licence file.** README says CC BY-SA 4.0 but the repo has no `LICENSE`. Add the canonical text.
-2. **Figures.** The 6 removed diagrams (maritime trade, defense in depth, OpenBridge hardware, CAN physical, CAN arbitration, bus-off) were never created; add and re-embed if wanted.
-3. **Quizzes** exist only for classes 1-2; **no answer keys** for quizzes, midterm, or lab solutions.
-4. **Attack scripts** `dos_attack.py`, `replay_attack.py`, `dos_detector.py` are referenced but not provided.
-5. **Hardware path.** The course uses a Teensy/OpenBridge build; the research platform is NEMO. Decide whether the course targets one or both and say so.
-6. **Instructor bio / contact** and any institution-specific text.
-7. **IRB** (#67) before collecting any student data or outcome claims. The course makes no learning-outcome claims.
-8. Labs 10, 11 and 12 were not executed end to end; only code syntax (185 of 186 blocks parse; the one failure is a shell command in lab 8) and labs 5, 9, 13 evaluation logic were checked.
-9. Offensive content (weeks 5-8): the isolation and ethics warnings are good; check CLARK's content policy for offensive-security material.
+## Open (needs author)
+1. **Labs 6-8 and parts of classes 5, 7, 8** still use the old OpenBridge serial interface and scripts
+   (`ttyACM`, `dos_attack.py`, `replay_attack.py`). They need rewriting for NEMO's own demos or replacing with
+   analysis exercises on the provided captures. Not done here.
+2. **Class text errors reported but not fixed** (attack-focused classes):
+   class 6 (400 hPa is about 5.8 PSI, not 58), class 7 (priority-0 "network management" claim, error-counter
+   thresholds should be above 127 / above 255, frame-size and rate arithmetic, a hybrid example that
+   contradicts its arbitration logic, stealth ID `0x00F80124` is PGN 63489), class 4 (address table; verify
+   against the standard), class 9 (wind PGN rate, "OpenPlotter baseline"), class 8 (10 Hz vs 4 Hz in the
+   captures, PGN snippet keeps the destination byte for PDU1 frames, engine pressure range).
+3. **Class 13 weights:** the largest single weight is 0.30 against a 0.5 alert threshold, so no single detector can alert alone; decide if that is intended.
+4. **Midterm:** class 8 prints no multiple-choice bank (the key supplies a recommended one); syllabus calls the midterm "practical" while class 8 is written plus practical.
+5. **Figures not made:** maritime trade routes, NEMO hardware photo, bus-off diagram.
+6. **Lab solutions** (instructor keys for labs 1-14).
+7. **Instructor bio, contact, institutional text** are generic; IRB (#67) never run per the author.
+8. **Content policy:** check CLARK's policy on offensive-security content for weeks 5-8.
+9. **End-to-end test** to be run by the author once ready; labs 10-12 were not executed here.

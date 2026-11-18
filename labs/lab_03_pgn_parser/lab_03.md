@@ -698,7 +698,7 @@ class TestParser(unittest.TestCase):
         result = parser.parse_can_id(0x09F80205)
 
         self.assertEqual(result['priority'], 2)
-        self.assertEqual(result['pgn'], 63490)
+        self.assertEqual(result['pgn'], 129026)
         self.assertEqual(result['source_address'], 5)
 
     def test_parse_line(self):

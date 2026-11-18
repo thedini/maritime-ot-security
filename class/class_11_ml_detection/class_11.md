@@ -369,10 +369,12 @@ class RandomForestDetector:
         """
         self.feature_names = feature_names
 
-        # Split data
-        X_train, X_val, y_train, y_val = train_test_split(
-            features, labels, test_size=0.2, random_state=42
-        )
+        # Split data chronologically (features must be in time order).
+        # A shuffled split would put windows that overlap the validation
+        # windows into training and overstate accuracy.
+        cut = int(len(features) * 0.8)
+        X_train, X_val = features[:cut], features[cut:]
+        y_train, y_val = labels[:cut], labels[cut:]
 
         # Scale
         X_train_scaled = self.scaler.fit_transform(X_train)
@@ -628,7 +630,7 @@ For CAN bus:
 - May miss single-message anomalies
 - Consider hybrid approaches
 
-Lab: Train on OpenPlotter baseline, test on attacks.
+Lab: Train on a NEMO-network baseline capture (or the course's synthetic normal capture), test on the attack captures.
 -->
 
 ## Model Comparison

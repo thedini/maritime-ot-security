@@ -328,7 +328,7 @@ Each student (or pair) needs:
 
 **1. Hardware connection**
 ```
-[OpenBridge Device] ---> [Instructor CAN Bus]
+[NEMO board] ---> [Instructor CAN Bus]
        |
     [Laptop USB]
 ```

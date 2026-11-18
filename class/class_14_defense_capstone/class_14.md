@@ -78,7 +78,7 @@ description: |
 #!/usr/bin/env python3
 """
 Maritime IDS - Complete Defense System
-Production-ready implementation combining all detection methods
+Reference implementation combining all detection methods (teaching code, not production-tested)
 """
 
 import time
@@ -244,6 +244,7 @@ class MaritimeIDS:
         # Add to queues
         self.alert_queue.put(alert)
         self.active_alerts.append(alert)
+        self.alert_history.append(alert)   # full record; DetectionAnalyzer reads this
 
         # Trim active alerts (keep last 100)
         if len(self.active_alerts) > 100:
@@ -645,7 +646,7 @@ Presentation (10 points):
 1. **CAN/NMEA 2000 is inherently vulnerable**
    - No authentication
    - Broadcast by design
-   - Spoofing is trivial
+   - Spoofing a source address needs no credentials on an unprotected bus
 
 2. **Defense requires depth**
    - No single method catches everything
@@ -697,7 +698,7 @@ All topics from Weeks 1-13:
 ## Course Feedback
 
 Please complete the course evaluation:
-- [Evaluation link to be provided]
+- Your instructor will share the evaluation form for this offering
 
 Your feedback helps improve future offerings.
 
@@ -717,7 +718,6 @@ Your feedback helps improve future offerings.
 
 This course was developed with support from:
 - University of Rhode Island
-- [Additional sponsors/collaborators]
 
 Special thanks to all guest speakers and industry partners who contributed to this course.
 
@@ -726,5 +726,5 @@ Special thanks to all guest speakers and industry partners who contributed to th
 **Thank you for your participation in this course!**
 
 For questions or continued collaboration:
-- Email: [instructor email]
-- GitHub: [course repository]
+- Email: cmacris@uri.edu
+- GitHub: https://github.com/thedini/maritime-ot-security

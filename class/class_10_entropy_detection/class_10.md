@@ -163,7 +163,7 @@ print(f"DoS entropy: {calculate_can_id_entropy(dos_traffic):.2f} bits")
 ### Expected Output
 
 ```
-Normal entropy: 1.92 bits
+Normal entropy: 1.46 bits
 DoS entropy: 0.00 bits
 ```
 
@@ -171,7 +171,7 @@ DoS entropy: 0.00 bits
 Instructor Notes:
 
 Walk through the math:
-- Normal: 3 unique IDs, roughly equal distribution
+- Normal: 3 unique IDs, uneven distribution (counts 3, 2, 1)
 - DoS: 1 unique ID, all same
 - DoS entropy = 0 because p=1, log₂(1)=0
 

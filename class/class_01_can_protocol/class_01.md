@@ -80,6 +80,8 @@ Expected: Internet connectivity, wireless, autonomous features
   - Recessive (1): Both ~2.5V (diff=0V)
 - Noise immunity from differential signaling
 
+![CAN physical layer: CAN_H and CAN_L levels and the differential signal for a bit sequence](../../images/can_physical.png)
+
 ### Termination
 
 - 120Ω resistors at each end of bus
@@ -162,6 +164,8 @@ Key insight: **Lower ID = Higher Priority**
 3. If node transmits recessive but reads dominant → **loses arbitration**
 4. Losing node stops and retries later
 5. Winning node continues unaware of collision
+
+![CAN arbitration: node A wins, node B loses at the first differing bit and stops](../../images/can_arbitration.png)
 
 <!--
 Instructor Notes:

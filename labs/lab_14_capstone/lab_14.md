@@ -364,4 +364,4 @@ You have learned:
 
 **Thank you for your participation!**
 
-Questions? Contact: [instructor email]
+Questions? Contact: cmacris@uri.edu

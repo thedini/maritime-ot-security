@@ -203,6 +203,8 @@ Provide links to freely available guidance documents for student reading.
 5. Data: Encryption, integrity
 6. **Detection**: Anomaly detection (our focus!)
 
+![Defense in depth: perimeter, network, system, application, data, and detection layers](../../images/defense_in_depth.png)
+
 <!--
 Instructor Notes:
 

@@ -143,14 +143,14 @@ pdu_specific = (can_id >> 8) & 0xFF   # Bits 8-15
 source_addr = can_id & 0xFF           # Bits 0-7
 
 print(f"Priority: {priority}")        # 2
-print(f"Data Page: {data_page}")      # 0
+print(f"Data Page: {data_page}")      # 1
 print(f"PDU Format: {pdu_format}")    # 248 (0xF8)
 print(f"PDU Specific: {pdu_specific}")# 2
 print(f"Source Address: {source_addr}")# 5
 
 # Calculate PGN (PF >= 240, so PDU2)
 pgn = (data_page << 16) | (pdu_format << 8) | pdu_specific
-print(f"PGN: {pgn}")                  # 63490 (0xF802)
+print(f"PGN: {pgn}")                  # 129026 (0x1F802), COG & SOG Rapid Update
 ```
 
 <!--
@@ -162,8 +162,8 @@ Have students calculate by hand before showing Python.
 
 Quiz question: "What is the PGN for CAN ID 0x0DF11324?"
 Answer:
-- PF = 0xF1 = 241 >= 240, so PDU2
-- PGN = (0 << 16) | (241 << 8) | 19 = 61715
+- Priority = 3, Data Page = 1, PF = 0xF1 = 241 >= 240, so PDU2
+- PGN = (1 << 16) | (241 << 8) | 19 = 127251 (Rate of Turn); source address = 0x24 = 36
 -->
 
 ## Common NMEA 2000 PGNs
