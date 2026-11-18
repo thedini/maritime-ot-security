@@ -48,9 +48,9 @@ Every legitimate device transmits at a predictable rate:
 
 | Device | PGN | Expected Rate |
 |--------|-----|---------------|
-| GPS | 129025 | 10 Hz ± 0.1 Hz |
+| GPS position | 129025 | 4 Hz in the course captures (device-dependent) |
 | Compass | 127250 | 10 Hz ± 0.1 Hz |
-| Wind | 130306 | 1 Hz ± 0.05 Hz |
+| Wind | 130306 | 10 Hz in the course captures (device-dependent) |
 | Engine | 127488 | 10 Hz ± 0.1 Hz |
 | Engine | 127489 | 0.5 Hz ± 0.05 Hz |
 
@@ -214,7 +214,7 @@ Critical questions:
 - What is "normal"? (No attacks, typical operation)
 - How often to update? (Weekly, or after configuration changes)
 
-Lab will collect baseline from OpenPlotter network.
+Lab uses the baseline from the provided normal capture (or a capture from your own NEMO bench).
 -->
 
 ## Implementing Frequency Detector

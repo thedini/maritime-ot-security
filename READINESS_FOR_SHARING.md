@@ -28,10 +28,8 @@ content); check them before submitting.
    analysis exercises on the provided captures. Not done here.
 2. **Class text errors:** classes 6 and 7 fixed (oil pressure units, error-counter thresholds, frame size and
    flood rate, priority-0 label, 0x00F80124 vs 0x01F80124, hybrid example reworked as a conceptual discussion).
-   Still open: class 4 (address table; verify against the standard), class 9 (wind PGN rate, "OpenPlotter
-   baseline"), class 8 (10 Hz vs 4 Hz in the captures, PGN snippet keeps the destination byte for PDU1 frames,
-   engine pressure range).
-3. **Class 13 weights:** the largest single weight is 0.30 against a 0.5 alert threshold, so no single detector can alert alone; decide if that is intended.
+   Class 4 address table now flagged for verification (not confirmed against the standard); classes 8, 9 and 13 corrected or annotated.
+3. **Class 13 weights:** annotated in the code as a design choice (no single detector can alert alone); confirm intent.
 4. **Midterm:** class 8 prints no multiple-choice bank (the key supplies a recommended one); syllabus calls the midterm "practical" while class 8 is written plus practical.
 5. **Figures not made:** maritime trade routes, NEMO hardware photo, bus-off diagram.
 6. **Lab solutions** (instructor keys for labs 1-14).

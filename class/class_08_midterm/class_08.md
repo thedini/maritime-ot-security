@@ -148,7 +148,11 @@ def enumerate_devices(capture):
     devices = {}
     for frame in capture:
         sa = frame.can_id & 0xFF
-        pgn = (frame.can_id >> 8) & 0x3FFFF
+        pf = (frame.can_id >> 16) & 0xFF
+        ps = (frame.can_id >> 8) & 0xFF
+        dp = (frame.can_id >> 24) & 0x1
+        # PF >= 240: PDU2, PS is part of the PGN. PF < 240: PDU1, PS is the destination.
+        pgn = (dp << 16) | (pf << 8) | (ps if pf >= 240 else 0)
         if sa not in devices:
             devices[sa] = {'pgns': set(), 'count': 0}
         devices[sa]['pgns'].add(pgn)
@@ -159,7 +163,7 @@ def enumerate_devices(capture):
 ### Frequency Profiling
 
 - Each PGN has expected transmission rate
-- Position/Heading: 10 Hz
+- Heading: 10 Hz; position and COG/SOG: about 4 Hz in the course captures (rates vary by device and installation; always measure the baseline)
 - Engine: 0.5-10 Hz
 - Environment: 1 Hz
 - Deviation from baseline indicates anomaly

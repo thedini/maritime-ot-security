@@ -162,7 +162,7 @@ for sa, info in sorted(devices.items()):
 |----------------|-------------|------|
 | 0-127 | Self-configurable devices | Various |
 | 128-247 | Non-configurable devices | Various |
-| 248-253 | Reserved | - |
+| 248-253 | Reserved / special use (verify exact ranges against the NMEA 2000 / ISO 11783-5 address rules before teaching) | - |
 | 254 | Null address | - |
 | 255 | Global (broadcast dest) | - |
 

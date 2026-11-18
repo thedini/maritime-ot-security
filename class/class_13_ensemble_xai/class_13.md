@@ -345,8 +345,12 @@ class MaritimeIDSEnsemble:
             'frequency': 0.25,
             'entropy': 0.20,
             'ml': 0.25,
-            'fingerprint': 0.30  # High weight for physical detection
+            'fingerprint': 0.30  # Highest weight (an assumption to evaluate, not a tuned result)
         }
+        # NOTE: no single weight reaches the 0.5 alert threshold, so no one
+        # detector can raise an alert alone; at least two must agree. State
+        # this as a design choice and measure its effect on missed detections
+        # (e.g. a TM3 false-value case that only one layer sees).
 
         # Alert thresholds
         self.alert_threshold = 0.5
