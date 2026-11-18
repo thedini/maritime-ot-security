@@ -206,7 +206,7 @@ def suppress_oil_alarm(instance, source_addr):
     Spoof normal oil pressure to hide actual low pressure
     DANGEROUS: Could lead to engine damage
     """
-    normal_oil_pressure = 400  # 400 hPa = ~58 PSI (normal)
+    normal_oil_pressure = 4000  # 4000 hPa = 400 kPa = ~58 PSI (normal; 400 hPa would be only ~5.8 PSI)
     normal_oil_temp = 3630     # 90°C in 0.1K (3630 = 363K = 90°C)
     normal_engine_temp = 35500 # 355K = 82°C in 0.01K
 

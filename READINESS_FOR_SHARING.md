@@ -26,12 +26,11 @@ content); check them before submitting.
 1. **Labs 6-8 and parts of classes 5, 7, 8** still use the old OpenBridge serial interface and scripts
    (`ttyACM`, `dos_attack.py`, `replay_attack.py`). They need rewriting for NEMO's own demos or replacing with
    analysis exercises on the provided captures. Not done here.
-2. **Class text errors reported but not fixed** (attack-focused classes):
-   class 6 (400 hPa is about 5.8 PSI, not 58), class 7 (priority-0 "network management" claim, error-counter
-   thresholds should be above 127 / above 255, frame-size and rate arithmetic, a hybrid example that
-   contradicts its arbitration logic, stealth ID `0x00F80124` is PGN 63489), class 4 (address table; verify
-   against the standard), class 9 (wind PGN rate, "OpenPlotter baseline"), class 8 (10 Hz vs 4 Hz in the
-   captures, PGN snippet keeps the destination byte for PDU1 frames, engine pressure range).
+2. **Class text errors:** classes 6 and 7 fixed (oil pressure units, error-counter thresholds, frame size and
+   flood rate, priority-0 label, 0x00F80124 vs 0x01F80124, hybrid example reworked as a conceptual discussion).
+   Still open: class 4 (address table; verify against the standard), class 9 (wind PGN rate, "OpenPlotter
+   baseline"), class 8 (10 Hz vs 4 Hz in the captures, PGN snippet keeps the destination byte for PDU1 frames,
+   engine pressure range).
 3. **Class 13 weights:** the largest single weight is 0.30 against a 0.5 alert threshold, so no single detector can alert alone; decide if that is intended.
 4. **Midterm:** class 8 prints no multiple-choice bank (the key supplies a recommended one); syllabus calls the midterm "practical" while class 8 is written plus practical.
 5. **Figures not made:** maritime trade routes, NEMO hardware photo, bus-off diagram.

@@ -111,16 +111,18 @@ Bus:     ┌───┐   ┌───┐   ┌───┐   ┌───┐
 # NMEA 2000 uses 29-bit extended IDs
 
 # Normal navigation message (priority 2)
-# PGN 129025, SA 36
-normal_id = 0x09F80124  # Priority 2 in upper bits
+# PGN 129025 (data page 1), SA 36
+normal_id = 0x09F80124  # Priority 2 in bits 28-26
 
 # Attack message (priority 0)
 # Use reserved PGN with priority 0
 attack_id = 0x00000000  # Will always win arbitration!
 
-# Even better: Use valid format with priority 0
-# This may be more stealthy
-stealth_attack_id = 0x00F80124  # Priority 0, same PGN
+# A frame with a valid-looking format and priority 0, same PGN and SA
+# (changing only the priority bits leaves the PGN unchanged)
+priority0_same_pgn_id = 0x01F80124  # Priority 0, PGN 129025, SA 36
+# Note: 0x00F80124 is NOT the same PGN. It also clears the data-page bit,
+# giving PGN 63489. Always decode all of priority, data page, PF, PS and SA.
 ```
 
 <!--
@@ -129,9 +131,12 @@ Instructor Notes:
 The priority field in NMEA 2000 is 3 bits (0-7).
 Lower number = higher priority.
 
-Priority 0 = Network management
-Priority 2 = Most navigation data
-Priority 6 = Non-critical data
+Priority 0 = Highest priority; rarely used as a PGN default
+Priority 2 = Most navigation data (e.g. position, COG/SOG)
+Priority 6 = Network management (address claim, ISO request) and
+             most non-critical data
+Check the priority column of the PGN table you teach from rather than
+relying on this list; defaults vary by PGN.
 
 Attack approach:
 1. Use priority 0 with any PGN
@@ -159,21 +164,22 @@ class BusFloodAttack:
         self.interface = interface
         self.running = False
 
-    def calculate_flood_rate(self, bitrate=250000, frame_bits=111):
+    def calculate_flood_rate(self, bitrate=250000, frame_bits=131):
         """
         Calculate maximum flood rate
 
         Args:
             bitrate: CAN bus speed (NMEA 2000 = 250kbps)
-            frame_bits: Bits per frame (29-bit ID + 8 data + overhead)
+            frame_bits: Bits per frame, 8 data bytes, extended ID
 
         Returns:
             Maximum frames per second
         """
-        # Extended frame: 29-bit ID, 8 bytes data
-        # ~111 bits minimum with bit stuffing
+        # Extended frame, 8 data bytes: 128 bits before stuffing
+        # (through end of frame) + 3 bits intermission = 131 bits.
+        # Bit stuffing adds up to ~24 more bits in the worst case.
         max_fps = bitrate / frame_bits
-        return int(max_fps)  # ~2252 fps at 250kbps
+        return int(max_fps)  # ~1900 fps at 250 kbit/s (about 1600 worst case)
 
     def flood_bus(self, can_id=0x00000000, duration_sec=10):
         """
@@ -242,9 +248,10 @@ CAN nodes have error counters:
 - **TEC** - Transmit Error Counter
 - **REC** - Receive Error Counter
 
-If errors exceed threshold:
-- 128+ errors = Error Passive state
-- 256 errors = Bus-off state (node disabled!)
+The counters are not simple error tallies: a transmit error typically
+adds 8 to the TEC and each successful frame subtracts 1. Thresholds:
+- A counter above 127 = Error Passive state
+- TEC above 255 = Bus-off state (node disabled until it recovers)
 
 ### Forcing Bus-off
 
@@ -491,32 +498,24 @@ def engine_replay_attack():
 
 ## Hybrid Attacks
 
-### DoS + Spoofing
+### DoS + Spoofing (conceptual)
 
-1. **Flood** legitimate device's PGN
-2. **Inject** spoofed data at lower rate
-3. Spoofed data is only data received
+A hybrid combines suppression of a legitimate source with false data from
+another transmitter (a TM1 flood combined with a TM2 substituted transmitter).
 
-```python
-def hybrid_dos_spoof_attack(target_pgn, spoofed_data):
-    """
-    Combine DoS with spoofing
+Why the naive version fails, and what it teaches:
 
-    1. Identify target's source address
-    2. Flood with higher priority to block target
-    3. Send spoofed data as replacement
-    """
-    # Phase 1: Block legitimate source
-    flood_can_id = (0 << 26) | target_pgn  # Priority 0
-    flood_rate = 1000  # fps
+1. A flood that wins arbitration is not selective. Frames that lose
+   arbitration to it include the spoofer's own frames, because arbitration
+   compares the whole identifier, priority bits first.
+2. A flood that is selective (lower priority than the spoofer's frames)
+   does not stop the legitimate device from transmitting.
+3. So a working hybrid needs suppression by some other means (for example the
+   legitimate device is offline or silenced), which is a separate assumption
+   to state in the threat model.
 
-    # Phase 2: Inject spoofed data
-    spoof_can_id = (2 << 26) | target_pgn  # Normal priority
-    spoof_rate = 10  # fps (normal rate)
-
-    # Result: Only spoofed data gets through
-    pass
-```
+Discussion: for each case, which detector signals from classes 9-13 would
+still fire (rate change, unknown source, identifier/priority anomaly)?
 
 ### Replay + Modification
 
